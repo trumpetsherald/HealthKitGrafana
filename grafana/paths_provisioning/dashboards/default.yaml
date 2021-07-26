@@ -1,0 +1,19 @@
+apiVersion: 1
+
+providers:
+  # <string> an unique provider name. Required
+  - name: 'health_dashboards'
+    # <int> Org id. Default to 1
+    orgId: 1
+    type: file
+    # <bool> disable dashboard deletion
+    disableDeletion: false
+    # <int> how often Grafana will scan for changed dashboards
+    updateIntervalSeconds: 60
+    # <bool> allow updating provisioned dashboards from the UI
+    allowUiUpdates: false
+    options:
+      # <string, required> path to dashboard files on disk. Required when using the 'file' type
+      path: /opt/grafana/dashboards
+      # <bool> use folder names from filesystem to create folders in Grafana
+      foldersFromFilesStructure: false

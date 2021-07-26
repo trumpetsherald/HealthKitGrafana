@@ -1,0 +1,13 @@
+apiVersion: 1
+
+datasources:
+  - name: Health Kit
+    type: postgres
+    url: database
+    database: health_kit_grafana
+    user: caduceus
+    secureJsonData:
+      password: Mariner-10
+    jsonData:
+      sslmode: disable
+      postgresVersion: 1000

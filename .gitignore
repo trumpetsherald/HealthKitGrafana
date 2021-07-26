@@ -1,3 +1,9 @@
 **/*.DS_Store
 **/*.pyc
 **/*.env
+**/.idea/*
+**/venv/*
+**/export.xml
+**/*.log
+**/grafana/paths_data/*
+**/postgres/pg_data/*

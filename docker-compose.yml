@@ -1,0 +1,42 @@
+version: "3"
+services:
+  database:
+    image: postgres:10.16-alpine
+    restart: always
+    volumes:
+      - "./postgres/pg_data:/var/lib/postgresql/data"
+      - "./postgres/docker-entrypoint-initdb.d:/docker-entrypoint-initdb.d"
+    environment:
+      POSTGRES_DB: health_kit_grafana
+      POSTGRES_USER: caduceus
+      POSTGRES_PASSWORD: Mariner-10
+    ports:
+      - "5432:5432"
+    user: postgres
+  graphs:
+    image: "grafana/grafana:8.0.5"
+    restart: always
+    volumes:
+      - "./grafana/paths_data:/var/lib/grafana"
+      - "./grafana/paths_provisioning:/etc/grafana/provisioning"
+      - "./grafana/paths_plugins:/var/lib/grafana/plugins"
+      - "./grafana/dashboard_definitions:/opt/grafana/dashboards"
+    ports:
+      - "3000:3000"
+    depends_on:
+      - database
+  exporter:
+    environment:
+      HKG_DB_HOST: database
+      HKG_DB_NAME: health_kit_grafana
+      HKG_DB_USERNAME: caduceus
+      HKG_DB_PASSWORD: Mariner-10
+    build:
+      context: .
+      dockerfile: Dockerfile
+    restart: "no"
+#    command: ["/bin/ls", "-al", "/opt/healthkit_grafana"]
+    volumes:
+      - "./apple_health_export/export.xml:/opt/healthkit_grafana/apple_health_export/export.xml"
+    depends_on:
+      - graphs
