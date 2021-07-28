@@ -1,3 +1,4 @@
+import datetime
 import os
 import sys
 from healthkit_grafana import hkg_logger
@@ -151,19 +152,32 @@ def get_category_records(xml_records):
 
 def import_data():
     global DATABASE
+    start = datetime.datetime.now()
     LOGGER.info("Starting Health Kit Exporter.")
     connect_to_db()
     xml_records = parse_file()
-    # DATABASE.reset_db()
+    split = datetime.datetime.now() - start
+    LOGGER.info("Reading file took %s seconds." % split)
+
     quantity_records = get_quantity_records(xml_records)
     category_records = get_category_records(xml_records)
 
-    LOGGER.info("Adding quantity records to the database.")
+    LOGGER.info("Adding %s quantity records to the database." %
+                len(quantity_records))
     DATABASE.insert_quantity_records(quantity_records)
-    LOGGER.info("Adding category records to the database.")
+    split = datetime.datetime.now() - split
+    LOGGER.info("Inserting quantity records took %s seconds." % split)
+
+    LOGGER.info("Adding %s category records to the database." %
+                len(category_records))
     DATABASE.insert_category_records(category_records)
+    split = datetime.datetime.now() - split
+    LOGGER.info("Inserting category records took %s seconds." % split)
+
+    end = datetime.datetime.now() - start
+
+    LOGGER.info("Exiting, everything took %s seconds." % end)
 
 
 if __name__ == "__main__":
-    print(sys.path)
     import_data()

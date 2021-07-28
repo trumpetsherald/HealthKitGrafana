@@ -15,7 +15,6 @@
   "editable": true,
   "gnetId": null,
   "graphTooltip": 0,
-  "id": 1,
   "links": [],
   "panels": [
     {
@@ -93,7 +92,7 @@
           "group": [],
           "metricColumn": "none",
           "rawQuery": true,
-          "rawSql": "SELECT\n  $__timeGroupAlias(start_date, '1d', 0),\n  sum(hk_value) as \"Steps Per Day\"\nFROM \n  public.hk_record\nWHERE\n  $__timeFilter(start_date)\nAND\n  hk_type = 'HKQuantityTypeIdentifierStepCount'\nGROUP BY time\nORDER BY time",
+          "rawSql": "SELECT\n  $__timeGroupAlias(start_date, '1d', 0),\n  sum(hk_value) as \"Steps Per Day\"\nFROM \n  public.hk_quantity_record\nWHERE\n  $__timeFilter(start_date)\nAND\n  hk_type = 'HKQuantityTypeIdentifierStepCount'\nGROUP BY time\nORDER BY time",
           "refId": "A",
           "select": [
             [
@@ -193,7 +192,7 @@
           "group": [],
           "metricColumn": "none",
           "rawQuery": true,
-          "rawSql": "SELECT\n  start_date as time,\n  hk_value as \"Resting Heart Rate\"\nFROM \n  public.hk_record\nWHERE\n  $__timeFilter(start_date)\nAND\n  hk_type = 'HKQuantityTypeIdentifierRestingHeartRate'\nORDER BY time",
+          "rawSql": "SELECT\n  start_date as time,\n  hk_value as \"Resting Heart Rate\"\nFROM \n  public.hk_quantity_record\nWHERE\n  $__timeFilter(start_date)\nAND\n  hk_type = 'HKQuantityTypeIdentifierRestingHeartRate'\nORDER BY time",
           "refId": "A",
           "select": [
             [
@@ -277,7 +276,7 @@
         "x": 0,
         "y": 9
       },
-      "id": 4,
+      "id": 5,
       "options": {
         "legend": {
           "calcs": [],
@@ -294,7 +293,7 @@
           "group": [],
           "metricColumn": "none",
           "rawQuery": true,
-          "rawSql": "SELECT\n  start_date as time,\n  hk_value as \"Body Mass\"\nFROM \n  public.hk_record\nWHERE\n  $__timeFilter(start_date)\nAND\n  hk_type = 'HKQuantityTypeIdentifierBodyMass'\nORDER BY time",
+          "rawSql": "SELECT\n  start_date as time,\n  hk_value as \"O2 Saturation\"\nFROM \n  public.hk_quantity_record\nWHERE\n  $__timeFilter(start_date)\nAND\n  hk_type = 'HKQuantityTypeIdentifierOxygenSaturation'\nORDER BY time",
           "refId": "A",
           "select": [
             [
@@ -316,8 +315,228 @@
           ]
         }
       ],
-      "title": "How much do I weigh?",
+      "title": "What is my O2 Saturation?",
       "type": "timeseries"
+    },
+    {
+      "collapsed": false,
+      "datasource": null,
+      "gridPos": {
+        "h": 1,
+        "w": 24,
+        "x": 0,
+        "y": 18
+      },
+      "id": 10,
+      "panels": [],
+      "title": "Smart Scale",
+      "type": "row"
+    },
+    {
+      "aliasColors": {
+        "Body Fat %": "dark-yellow",
+        "Body Mass": "super-light-green",
+        "Lean Body Mass": "red"
+      },
+      "bars": false,
+      "dashLength": 10,
+      "dashes": false,
+      "datasource": "Health Kit",
+      "description": "",
+      "fieldConfig": {
+        "defaults": {
+          "unit": "masslb"
+        },
+        "overrides": [
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "Body Fat %"
+            },
+            "properties": [
+              {
+                "id": "unit",
+                "value": "percentunit"
+              }
+            ]
+          }
+        ]
+      },
+      "fill": 0,
+      "fillGradient": 0,
+      "gridPos": {
+        "h": 9,
+        "w": 12,
+        "x": 0,
+        "y": 19
+      },
+      "hiddenSeries": false,
+      "id": 4,
+      "legend": {
+        "avg": false,
+        "current": false,
+        "max": false,
+        "min": false,
+        "show": true,
+        "total": false,
+        "values": false
+      },
+      "lines": true,
+      "linewidth": 1,
+      "nullPointMode": "null",
+      "options": {
+        "alertThreshold": true
+      },
+      "percentage": false,
+      "pluginVersion": "8.0.5",
+      "pointradius": 2,
+      "points": false,
+      "renderer": "flot",
+      "seriesOverrides": [
+        {
+          "$$hashKey": "object:218",
+          "alias": "Body Mass",
+          "linewidth": 2
+        },
+        {
+          "$$hashKey": "object:293",
+          "alias": "Lean Body Mass"
+        },
+        {
+          "$$hashKey": "object:302",
+          "alias": "Body Fat %",
+          "fill": 1,
+          "linewidth": 0,
+          "yaxis": 2
+        }
+      ],
+      "spaceLength": 10,
+      "stack": false,
+      "steppedLine": false,
+      "targets": [
+        {
+          "format": "time_series",
+          "group": [],
+          "metricColumn": "none",
+          "rawQuery": true,
+          "rawSql": "SELECT\n  start_date as time,\n  hk_value as \"Body Mass\"\nFROM \n  public.hk_quantity_record\nWHERE\n  $__timeFilter(start_date)\nAND\n  hk_type = 'HKQuantityTypeIdentifierBodyMass'\nORDER BY time",
+          "refId": "A",
+          "select": [
+            [
+              {
+                "params": [
+                  "value"
+                ],
+                "type": "column"
+              }
+            ]
+          ],
+          "timeColumn": "time",
+          "where": [
+            {
+              "name": "$__timeFilter",
+              "params": [],
+              "type": "macro"
+            }
+          ]
+        },
+        {
+          "format": "time_series",
+          "group": [],
+          "hide": false,
+          "metricColumn": "none",
+          "rawQuery": true,
+          "rawSql": "SELECT\n  start_date as time,\n  hk_value as \"Lean Body Mass\"\nFROM \n  public.hk_quantity_record\nWHERE\n  $__timeFilter(start_date)\nAND\n  hk_type = 'HKQuantityTypeIdentifierLeanBodyMass'\nORDER BY time",
+          "refId": "B",
+          "select": [
+            [
+              {
+                "params": [
+                  "value"
+                ],
+                "type": "column"
+              }
+            ]
+          ],
+          "timeColumn": "time",
+          "where": [
+            {
+              "name": "$__timeFilter",
+              "params": [],
+              "type": "macro"
+            }
+          ]
+        },
+        {
+          "format": "time_series",
+          "group": [],
+          "hide": false,
+          "metricColumn": "none",
+          "rawQuery": true,
+          "rawSql": "SELECT\n  start_date as time,\n  hk_value as \"Body Fat %\"\nFROM \n  public.hk_quantity_record\nWHERE\n  $__timeFilter(start_date)\nAND\n  hk_type = 'HKQuantityTypeIdentifierBodyFatPercentage'\nORDER BY time",
+          "refId": "C",
+          "select": [
+            [
+              {
+                "params": [
+                  "hk_value"
+                ],
+                "type": "column"
+              }
+            ]
+          ],
+          "table": "hk_quantity_record",
+          "timeColumn": "creation_date",
+          "timeColumnType": "timestamp",
+          "where": [
+            {
+              "name": "$__timeFilter",
+              "params": [],
+              "type": "macro"
+            }
+          ]
+        }
+      ],
+      "thresholds": [],
+      "timeFrom": null,
+      "timeRegions": [],
+      "timeShift": null,
+      "title": "How much do I weigh?",
+      "tooltip": {
+        "shared": true,
+        "sort": 0,
+        "value_type": "individual"
+      },
+      "type": "graph",
+      "xaxis": {
+        "buckets": null,
+        "mode": "time",
+        "name": null,
+        "show": true,
+        "values": []
+      },
+      "yaxes": [
+        {
+          "format": "masslb",
+          "label": null,
+          "logBase": 1,
+          "max": null,
+          "min": null,
+          "show": true
+        },
+        {
+          "format": "percentunit",
+          "label": null,
+          "logBase": 1,
+          "max": null,
+          "min": null,
+          "show": true
+        }
+      ],
+      "yaxis": {
+        "align": false,
+        "alignLevel": null
+      }
     },
     {
       "datasource": "Health Kit",
@@ -376,9 +595,9 @@
         "h": 9,
         "w": 12,
         "x": 12,
-        "y": 9
+        "y": 19
       },
-      "id": 5,
+      "id": 8,
       "options": {
         "legend": {
           "calcs": [],
@@ -395,7 +614,7 @@
           "group": [],
           "metricColumn": "none",
           "rawQuery": true,
-          "rawSql": "SELECT\n  start_date as time,\n  hk_value as \"O2 Saturation\"\nFROM \n  public.hk_record\nWHERE\n  $__timeFilter(start_date)\nAND\n  hk_type = 'HKQuantityTypeIdentifierOxygenSaturation'\nORDER BY time",
+          "rawSql": "SELECT\n  start_date as time,\n  hk_value as \"BMI\"\nFROM \n  public.hk_quantity_record\nWHERE\n  $__timeFilter(start_date)\nAND\n  hk_type = 'HKQuantityTypeIdentifierBodyMassIndex'\nORDER BY time",
           "refId": "A",
           "select": [
             [
@@ -417,7 +636,7 @@
           ]
         }
       ],
-      "title": "What is my O2 Saturation?",
+      "title": "What is my BMI?",
       "type": "timeseries"
     }
   ],
@@ -429,12 +648,12 @@
     "list": []
   },
   "time": {
-    "from": "now-14d",
+    "from": "now-90d",
     "to": "now"
   },
   "timepicker": {},
   "timezone": "",
   "title": "Health Kit",
   "uid": "RPw0roWnz",
-  "version": 1
+  "version": 2
 }
