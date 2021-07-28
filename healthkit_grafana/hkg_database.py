@@ -139,33 +139,34 @@ class HKGDatabase(object):
 
         return result[0]
 
-    def insert_health_record(self, health_record):
-        upsert_sql = "INSERT INTO public.hk_record( " \
-                     "hk_type, " \
-                     "hk_source, " \
-                     "source_version, " \
-                     "device, " \
-                     "creation_date, " \
-                     "start_date, " \
-                     "end_date, " \
-                     "unit, " \
-                     "hk_value) " \
-                     "VALUES %s " \
-                     "ON CONFLICT ON CONSTRAINT" \
-                     "   hk_record_pkey " \
-                     "DO UPDATE " \
-                     "SET (hk_type, hk_source, source_version, device, " \
-                     "creation_date, start_date, end_date, " \
-                     "unit, hk_value) = " \
-                     "(EXCLUDED.hk_type, EXCLUDED.hk_source, " \
-                     "EXCLUDED.source_version, " \
-                     "EXCLUDED.device, EXCLUDED.creation_date, " \
-                     "EXCLUDED.start_date, EXCLUDED.end_date, " \
-                     "EXCLUDED.unit, EXCLUDED.hk_value);"
-        return self.insert_values([health_record], upsert_sql)
+    # def insert_health_record(self, health_record):
+    #     upsert_sql = "INSERT INTO public.hk_record( " \
+    #                  "hk_type, " \
+    #                  "hk_source, " \
+    #                  "source_version, " \
+    #                  "device, " \
+    #                  "creation_date, " \
+    #                  "start_date, " \
+    #                  "end_date, " \
+    #                  "unit, " \
+    #                  "hk_value) " \
+    #                  "VALUES %s " \
+    #                  "ON CONFLICT ON CONSTRAINT" \
+    #                  "   hk_record_pkey " \
+    #                  "DO UPDATE " \
+    #                  "SET (hk_type, hk_source, source_version, device, " \
+    #                  "creation_date, start_date, end_date, " \
+    #                  "unit, hk_value) = " \
+    #                  "(EXCLUDED.hk_type, EXCLUDED.hk_source, " \
+    #                  "EXCLUDED.source_version, " \
+    #                  "EXCLUDED.device, EXCLUDED.creation_date, " \
+    #                  "EXCLUDED.start_date, EXCLUDED.end_date, " \
+    #                  "EXCLUDED.unit, EXCLUDED.hk_value);"
+    #     return self.insert_values([health_record], upsert_sql)
 
-    def insert_health_records(self, health_records):
-        upsert_sql = "INSERT INTO public.hk_record( " \
+    def insert_quantity_records(self, health_records):
+        upsert_sql = "INSERT INTO public.hk_quantity_record(" \
+                     "person_id, " \
                      "hk_type, " \
                      "hk_source, " \
                      "source_version, " \
@@ -177,15 +178,36 @@ class HKGDatabase(object):
                      "hk_value) " \
                      "VALUES %s " \
                      "ON CONFLICT ON CONSTRAINT" \
-                     "   hk_record_pkey " \
+                     "  hk_quantity_record_unique " \
                      "DO UPDATE " \
-                     "SET (hk_type, hk_source, source_version, device, " \
-                     "creation_date, start_date, end_date, " \
-                     "unit, hk_value) = " \
-                     "(EXCLUDED.hk_type, EXCLUDED.hk_source, " \
-                     "EXCLUDED.source_version, " \
+                     "SET (source_version, device, " \
+                     "creation_date, unit, hk_value) = " \
+                     "(EXCLUDED.source_version, " \
                      "EXCLUDED.device, EXCLUDED.creation_date, " \
-                     "EXCLUDED.start_date, EXCLUDED.end_date, " \
+                     "EXCLUDED.unit, EXCLUDED.hk_value);"
+
+        return self.insert_values(health_records, upsert_sql)
+
+    def insert_category_records(self, health_records):
+        upsert_sql = "INSERT INTO public.hk_category_record(" \
+                     "person_id, " \
+                     "hk_type, " \
+                     "hk_source, " \
+                     "source_version, " \
+                     "device, " \
+                     "creation_date, " \
+                     "start_date, " \
+                     "end_date, " \
+                     "unit, " \
+                     "hk_value) " \
+                     "VALUES %s " \
+                     "ON CONFLICT ON CONSTRAINT" \
+                     "  hk_category_record_unique " \
+                     "DO UPDATE " \
+                     "SET (source_version, device, " \
+                     "creation_date, unit, hk_value) = " \
+                     "(EXCLUDED.source_version, " \
+                     "EXCLUDED.device, EXCLUDED.creation_date, " \
                      "EXCLUDED.unit, EXCLUDED.hk_value);"
 
         return self.insert_values(health_records, upsert_sql)

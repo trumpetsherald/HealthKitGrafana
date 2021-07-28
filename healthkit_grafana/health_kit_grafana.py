@@ -10,6 +10,7 @@ EXPORT_FILE_PATH = os.environ.get(
             'HKG_EXPORT_FILE_PATH',
             '/opt/healthkit_grafana/apple_health_export/export.xml')
 
+DEFAULT_PERSON_ID = 1
 STRIP_PREFIXES = [
     'HKQuantityTypeIdentifier',
     'HKCategoryTypeIdentifier'
@@ -57,36 +58,26 @@ def parse_file() -> []:
     return record_list
 
 
-def import_data():
-    global DATABASE
-    LOGGER.info("Starting Health Kit Exporter.")
-    connect_to_db()
-    record_list = parse_file()
-    record_tuples = []
+def get_quantity_records(xml_records):
+    result = []
+    duplicates = {}
 
-    DATABASE.reset_db()
+    for record in xml_records:
+        record_type = record.getAttribute('type')
 
-    for record in record_list:
-        value = record.getAttribute('value')
-        if not value:
-            value = 0.0
+        if record_type.startswith("HKQuantityTypeIdentifier"):
+            value = record.getAttribute('value')
+            if not value:
+                value = 0.0
 
-        if value == HKCategoryValueSleepAnalysisInBed:
-            value = 0
-        elif value == HKCategoryValueSleepAnalysisAsleep:
-            value = 1
-        elif value == HKCategoryValueSleepAnalysisAwake:
-            value = 2
-        elif value == HKCategoryValueAppleStandHourIdle:
-            value = 0
-        elif value == HKCategoryValueAppleStandHourStood:
-            value = 1
-        elif value == HKCategoryValueHeadphoneAudioExposureEventSevenDayLimit:
-            value = 1
+            key = str(DEFAULT_PERSON_ID) + record_type + \
+                record.getAttribute('sourceName') + \
+                record.getAttribute('startDate') + \
+                record.getAttribute('endDate')
 
-        record_tuples.append(
-            (
-                record.getAttribute('type'),
+            quantity_record = (
+                DEFAULT_PERSON_ID,
+                record_type,
                 record.getAttribute('sourceName'),
                 record.getAttribute('sourceVersion'),
                 record.getAttribute('device'),
@@ -96,10 +87,81 @@ def import_data():
                 record.getAttribute('unit'),
                 value
             )
-        )
+            if key not in duplicates:
+                duplicates[key] = []
 
-    LOGGER.info("Updating the database.")
-    DATABASE.insert_health_records(record_tuples)
+            duplicates[key].append(quantity_record)
+
+            if len(duplicates[key]) == 1:
+                result.append(quantity_record)
+            else:
+                LOGGER.warn("Found duplicate records: %s" % duplicates[key])
+
+    return result
+
+
+def get_category_records(xml_records):
+    result = []
+    duplicates = {}
+
+    for record in xml_records:
+        record_type = record.getAttribute('type')
+
+        if record_type.startswith("HKCategoryTypeIdentifier"):
+            value = record.getAttribute('value')
+            if not value:
+                value = "Not Set"
+
+            # This is ugly but...
+            # My data has records where type, source, start, and end
+            # dates are all the same and the create date is seconds off
+            # Since I can only depend on those 4 items being present
+            # those are the unique constraints on the db. The other option
+            # (and this may be valid) is to do nothing on conflict vs update
+            # the other fields.
+            key = str(DEFAULT_PERSON_ID) + record_type + \
+                record.getAttribute('sourceName') + \
+                record.getAttribute('startDate') + \
+                record.getAttribute('endDate')
+
+            category_record = (
+                DEFAULT_PERSON_ID,
+                record_type,
+                record.getAttribute('sourceName'),
+                record.getAttribute('sourceVersion'),
+                record.getAttribute('device'),
+                record.getAttribute('creationDate'),
+                record.getAttribute('startDate'),
+                record.getAttribute('endDate'),
+                record.getAttribute('unit'),
+                value
+            )
+            if key not in duplicates:
+                duplicates[key] = []
+
+            duplicates[key].append(category_record)
+
+            if len(duplicates[key]) == 1:
+                result.append(category_record)
+            else:
+                LOGGER.warn("Found duplicate records: %s" % duplicates[key])
+
+    return result
+
+
+def import_data():
+    global DATABASE
+    LOGGER.info("Starting Health Kit Exporter.")
+    connect_to_db()
+    xml_records = parse_file()
+    # DATABASE.reset_db()
+    quantity_records = get_quantity_records(xml_records)
+    category_records = get_category_records(xml_records)
+
+    LOGGER.info("Adding quantity records to the database.")
+    DATABASE.insert_quantity_records(quantity_records)
+    LOGGER.info("Adding category records to the database.")
+    DATABASE.insert_category_records(category_records)
 
 
 if __name__ == "__main__":
