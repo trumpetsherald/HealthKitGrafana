@@ -23,6 +23,11 @@ and place the export.xml file into the apple_health_export directory of this rep
 5. There should be a dashboard called Health Kit in the General folder, click it.
 6. That's it! You should be able to browse your health data graphs.
 
+## Screenshots
+![vitals](./docs/vitals.png)
+![activity](./docs/activity.png)
+![body_measurements](./docs/body_measurements.png)
+
 ## What's Next
 Things I plan to change very soon.
 

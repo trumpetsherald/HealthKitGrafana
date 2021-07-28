@@ -15,107 +15,20 @@
   "editable": true,
   "gnetId": null,
   "graphTooltip": 0,
+  "iteration": 1627502149229,
   "links": [],
   "panels": [
     {
-      "datasource": "Health Kit",
-      "fieldConfig": {
-        "defaults": {
-          "color": {
-            "mode": "palette-classic"
-          },
-          "custom": {
-            "axisLabel": "",
-            "axisPlacement": "auto",
-            "barAlignment": 0,
-            "drawStyle": "bars",
-            "fillOpacity": 25,
-            "gradientMode": "none",
-            "hideFrom": {
-              "legend": false,
-              "tooltip": false,
-              "viz": false
-            },
-            "lineInterpolation": "linear",
-            "lineWidth": 1,
-            "pointSize": 5,
-            "scaleDistribution": {
-              "type": "linear"
-            },
-            "showPoints": "auto",
-            "spanNulls": false,
-            "stacking": {
-              "group": "A",
-              "mode": "none"
-            },
-            "thresholdsStyle": {
-              "mode": "off"
-            }
-          },
-          "mappings": [],
-          "thresholds": {
-            "mode": "absolute",
-            "steps": [
-              {
-                "color": "green",
-                "value": null
-              },
-              {
-                "color": "red",
-                "value": 80
-              }
-            ]
-          }
-        },
-        "overrides": []
-      },
+      "datasource": null,
       "gridPos": {
-        "h": 9,
-        "w": 12,
+        "h": 1,
+        "w": 24,
         "x": 0,
         "y": 0
       },
-      "id": 2,
-      "options": {
-        "legend": {
-          "calcs": [],
-          "displayMode": "list",
-          "placement": "bottom"
-        },
-        "tooltip": {
-          "mode": "single"
-        }
-      },
-      "targets": [
-        {
-          "format": "time_series",
-          "group": [],
-          "metricColumn": "none",
-          "rawQuery": true,
-          "rawSql": "SELECT\n  $__timeGroupAlias(start_date, '1d', 0),\n  sum(hk_value) as \"Steps Per Day\"\nFROM \n  public.hk_quantity_record\nWHERE\n  $__timeFilter(start_date)\nAND\n  hk_type = 'HKQuantityTypeIdentifierStepCount'\nGROUP BY time\nORDER BY time",
-          "refId": "A",
-          "select": [
-            [
-              {
-                "params": [
-                  "value"
-                ],
-                "type": "column"
-              }
-            ]
-          ],
-          "timeColumn": "time",
-          "where": [
-            {
-              "name": "$__timeFilter",
-              "params": [],
-              "type": "macro"
-            }
-          ]
-        }
-      ],
-      "title": "How many steps per day were taken?",
-      "type": "timeseries"
+      "id": 20,
+      "title": "Vital Signs",
+      "type": "row"
     },
     {
       "datasource": "Health Kit",
@@ -171,9 +84,9 @@
       },
       "gridPos": {
         "h": 9,
-        "w": 12,
-        "x": 12,
-        "y": 0
+        "w": 8,
+        "x": 0,
+        "y": 1
       },
       "id": 3,
       "options": {
@@ -266,15 +179,16 @@
                 "value": 80
               }
             ]
-          }
+          },
+          "unit": "BPM"
         },
         "overrides": []
       },
       "gridPos": {
         "h": 9,
-        "w": 12,
-        "x": 0,
-        "y": 9
+        "w": 8,
+        "x": 8,
+        "y": 1
       },
       "id": 5,
       "options": {
@@ -293,7 +207,7 @@
           "group": [],
           "metricColumn": "none",
           "rawQuery": true,
-          "rawSql": "SELECT\n  start_date as time,\n  hk_value as \"O2 Saturation\"\nFROM \n  public.hk_quantity_record\nWHERE\n  $__timeFilter(start_date)\nAND\n  hk_type = 'HKQuantityTypeIdentifierOxygenSaturation'\nORDER BY time",
+          "rawSql": "SELECT\n  start_date as time,\n  hk_value as \"Heart Rate\"\nFROM \n  public.hk_quantity_record\nWHERE\n  $__timeFilter(start_date)\nAND\n  hk_type = 'HKQuantityTypeIdentifierHeartRate'\nORDER BY time",
           "refId": "A",
           "select": [
             [
@@ -315,111 +229,87 @@
           ]
         }
       ],
-      "title": "What is my O2 Saturation?",
+      "title": "What is my heart rate?",
       "type": "timeseries"
     },
     {
-      "collapsed": false,
-      "datasource": null,
-      "gridPos": {
-        "h": 1,
-        "w": 24,
-        "x": 0,
-        "y": 18
-      },
-      "id": 10,
-      "panels": [],
-      "title": "Smart Scale",
-      "type": "row"
-    },
-    {
-      "aliasColors": {
-        "Body Fat %": "dark-yellow",
-        "Body Mass": "super-light-green",
-        "Lean Body Mass": "red"
-      },
-      "bars": false,
-      "dashLength": 10,
-      "dashes": false,
       "datasource": "Health Kit",
       "description": "",
       "fieldConfig": {
         "defaults": {
-          "unit": "masslb"
-        },
-        "overrides": [
-          {
-            "matcher": {
-              "id": "byName",
-              "options": "Body Fat %"
+          "color": {
+            "mode": "palette-classic"
+          },
+          "custom": {
+            "axisLabel": "",
+            "axisPlacement": "auto",
+            "barAlignment": 0,
+            "drawStyle": "line",
+            "fillOpacity": 25,
+            "gradientMode": "none",
+            "hideFrom": {
+              "legend": false,
+              "tooltip": false,
+              "viz": false
             },
-            "properties": [
+            "lineInterpolation": "smooth",
+            "lineWidth": 1,
+            "pointSize": 5,
+            "scaleDistribution": {
+              "type": "linear"
+            },
+            "showPoints": "auto",
+            "spanNulls": false,
+            "stacking": {
+              "group": "A",
+              "mode": "none"
+            },
+            "thresholdsStyle": {
+              "mode": "off"
+            }
+          },
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
               {
-                "id": "unit",
-                "value": "percentunit"
+                "color": "green",
+                "value": null
+              },
+              {
+                "color": "red",
+                "value": 80
               }
             ]
-          }
-        ]
+          },
+          "unit": "BPM"
+        },
+        "overrides": []
       },
-      "fill": 0,
-      "fillGradient": 0,
       "gridPos": {
         "h": 9,
-        "w": 12,
-        "x": 0,
-        "y": 19
+        "w": 8,
+        "x": 16,
+        "y": 1
       },
-      "hiddenSeries": false,
-      "id": 4,
-      "legend": {
-        "avg": false,
-        "current": false,
-        "max": false,
-        "min": false,
-        "show": true,
-        "total": false,
-        "values": false
-      },
-      "lines": true,
-      "linewidth": 1,
-      "nullPointMode": "null",
+      "id": 23,
       "options": {
-        "alertThreshold": true
-      },
-      "percentage": false,
-      "pluginVersion": "8.0.5",
-      "pointradius": 2,
-      "points": false,
-      "renderer": "flot",
-      "seriesOverrides": [
-        {
-          "$$hashKey": "object:218",
-          "alias": "Body Mass",
-          "linewidth": 2
+        "legend": {
+          "calcs": [],
+          "displayMode": "list",
+          "placement": "bottom"
         },
-        {
-          "$$hashKey": "object:293",
-          "alias": "Lean Body Mass"
-        },
-        {
-          "$$hashKey": "object:302",
-          "alias": "Body Fat %",
-          "fill": 1,
-          "linewidth": 0,
-          "yaxis": 2
+        "tooltip": {
+          "mode": "single"
         }
-      ],
-      "spaceLength": 10,
-      "stack": false,
-      "steppedLine": false,
+      },
       "targets": [
         {
           "format": "time_series",
           "group": [],
           "metricColumn": "none",
           "rawQuery": true,
-          "rawSql": "SELECT\n  start_date as time,\n  hk_value as \"Body Mass\"\nFROM \n  public.hk_quantity_record\nWHERE\n  $__timeFilter(start_date)\nAND\n  hk_type = 'HKQuantityTypeIdentifierBodyMass'\nORDER BY time",
+          "rawSql": "SELECT\n  start_date as time,\n  hk_value as \"Heart Rate\"\nFROM \n  public.hk_quantity_record\nWHERE\n  $__timeFilter(start_date)\nAND\n  hk_type = 'HKQuantityTypeIdentifierWalkingHeartRateAverage'\nORDER BY time",
           "refId": "A",
           "select": [
             [
@@ -439,15 +329,90 @@
               "type": "macro"
             }
           ]
+        }
+      ],
+      "title": "What is my average walking heart rate?",
+      "type": "timeseries"
+    },
+    {
+      "datasource": "Health Kit",
+      "description": "",
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "palette-classic"
+          },
+          "custom": {
+            "axisLabel": "",
+            "axisPlacement": "auto",
+            "barAlignment": 0,
+            "drawStyle": "line",
+            "fillOpacity": 25,
+            "gradientMode": "none",
+            "hideFrom": {
+              "legend": false,
+              "tooltip": false,
+              "viz": false
+            },
+            "lineInterpolation": "smooth",
+            "lineWidth": 1,
+            "pointSize": 5,
+            "scaleDistribution": {
+              "type": "linear"
+            },
+            "showPoints": "auto",
+            "spanNulls": false,
+            "stacking": {
+              "group": "A",
+              "mode": "none"
+            },
+            "thresholdsStyle": {
+              "mode": "off"
+            }
+          },
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              },
+              {
+                "color": "red",
+                "value": 80
+              }
+            ]
+          },
+          "unit": "dtdurationms"
         },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 9,
+        "w": 8,
+        "x": 0,
+        "y": 10
+      },
+      "id": 22,
+      "options": {
+        "legend": {
+          "calcs": [],
+          "displayMode": "list",
+          "placement": "bottom"
+        },
+        "tooltip": {
+          "mode": "single"
+        }
+      },
+      "targets": [
         {
           "format": "time_series",
           "group": [],
-          "hide": false,
           "metricColumn": "none",
           "rawQuery": true,
-          "rawSql": "SELECT\n  start_date as time,\n  hk_value as \"Lean Body Mass\"\nFROM \n  public.hk_quantity_record\nWHERE\n  $__timeFilter(start_date)\nAND\n  hk_type = 'HKQuantityTypeIdentifierLeanBodyMass'\nORDER BY time",
-          "refId": "B",
+          "rawSql": "SELECT\n  start_date as time,\n  hk_value as \"Heart Rate Variability\"\nFROM \n  public.hk_quantity_record\nWHERE\n  $__timeFilter(start_date)\nAND\n  hk_type = 'HKQuantityTypeIdentifierHeartRateVariabilitySDNN'\nORDER BY time",
+          "refId": "A",
           "select": [
             [
               {
@@ -466,77 +431,10 @@
               "type": "macro"
             }
           ]
-        },
-        {
-          "format": "time_series",
-          "group": [],
-          "hide": false,
-          "metricColumn": "none",
-          "rawQuery": true,
-          "rawSql": "SELECT\n  start_date as time,\n  hk_value as \"Body Fat %\"\nFROM \n  public.hk_quantity_record\nWHERE\n  $__timeFilter(start_date)\nAND\n  hk_type = 'HKQuantityTypeIdentifierBodyFatPercentage'\nORDER BY time",
-          "refId": "C",
-          "select": [
-            [
-              {
-                "params": [
-                  "hk_value"
-                ],
-                "type": "column"
-              }
-            ]
-          ],
-          "table": "hk_quantity_record",
-          "timeColumn": "creation_date",
-          "timeColumnType": "timestamp",
-          "where": [
-            {
-              "name": "$__timeFilter",
-              "params": [],
-              "type": "macro"
-            }
-          ]
         }
       ],
-      "thresholds": [],
-      "timeFrom": null,
-      "timeRegions": [],
-      "timeShift": null,
-      "title": "How much do I weigh?",
-      "tooltip": {
-        "shared": true,
-        "sort": 0,
-        "value_type": "individual"
-      },
-      "type": "graph",
-      "xaxis": {
-        "buckets": null,
-        "mode": "time",
-        "name": null,
-        "show": true,
-        "values": []
-      },
-      "yaxes": [
-        {
-          "format": "masslb",
-          "label": null,
-          "logBase": 1,
-          "max": null,
-          "min": null,
-          "show": true
-        },
-        {
-          "format": "percentunit",
-          "label": null,
-          "logBase": 1,
-          "max": null,
-          "min": null,
-          "show": true
-        }
-      ],
-      "yaxis": {
-        "align": false,
-        "alignLevel": null
-      }
+      "title": "What is my heart rate variability?",
+      "type": "timeseries"
     },
     {
       "datasource": "Health Kit",
@@ -593,11 +491,11 @@
       },
       "gridPos": {
         "h": 9,
-        "w": 12,
-        "x": 12,
-        "y": 19
+        "w": 8,
+        "x": 16,
+        "y": 10
       },
-      "id": 8,
+      "id": 21,
       "options": {
         "legend": {
           "calcs": [],
@@ -614,7 +512,7 @@
           "group": [],
           "metricColumn": "none",
           "rawQuery": true,
-          "rawSql": "SELECT\n  start_date as time,\n  hk_value as \"BMI\"\nFROM \n  public.hk_quantity_record\nWHERE\n  $__timeFilter(start_date)\nAND\n  hk_type = 'HKQuantityTypeIdentifierBodyMassIndex'\nORDER BY time",
+          "rawSql": "SELECT\n  start_date as time,\n  hk_value as \"O2 Saturation\"\nFROM \n  public.hk_quantity_record\nWHERE\n  $__timeFilter(start_date)\nAND\n  hk_type = 'HKQuantityTypeIdentifierOxygenSaturation'\nORDER BY time",
           "refId": "A",
           "select": [
             [
@@ -636,8 +534,1053 @@
           ]
         }
       ],
-      "title": "What is my BMI?",
+      "title": "What is my O2 Saturation?",
       "type": "timeseries"
+    },
+    {
+      "collapsed": false,
+      "datasource": null,
+      "gridPos": {
+        "h": 1,
+        "w": 24,
+        "x": 0,
+        "y": 19
+      },
+      "id": 12,
+      "panels": [],
+      "title": "Activity",
+      "type": "row"
+    },
+    {
+      "datasource": "Health Kit",
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "palette-classic"
+          },
+          "custom": {
+            "axisLabel": "",
+            "axisPlacement": "auto",
+            "barAlignment": 0,
+            "drawStyle": "bars",
+            "fillOpacity": 25,
+            "gradientMode": "none",
+            "hideFrom": {
+              "legend": false,
+              "tooltip": false,
+              "viz": false
+            },
+            "lineInterpolation": "linear",
+            "lineWidth": 1,
+            "pointSize": 5,
+            "scaleDistribution": {
+              "type": "linear"
+            },
+            "showPoints": "auto",
+            "spanNulls": false,
+            "stacking": {
+              "group": "A",
+              "mode": "none"
+            },
+            "thresholdsStyle": {
+              "mode": "off"
+            }
+          },
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              },
+              {
+                "color": "red",
+                "value": 80
+              }
+            ]
+          }
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 9,
+        "w": 8,
+        "x": 0,
+        "y": 20
+      },
+      "id": 2,
+      "options": {
+        "legend": {
+          "calcs": [],
+          "displayMode": "list",
+          "placement": "bottom"
+        },
+        "tooltip": {
+          "mode": "single"
+        }
+      },
+      "targets": [
+        {
+          "format": "time_series",
+          "group": [],
+          "metricColumn": "none",
+          "rawQuery": true,
+          "rawSql": "SELECT\n  $__timeGroupAlias(start_date, '1d', 0),\n  sum(hk_value) as \"Steps Per Day\"\nFROM \n  public.hk_quantity_record\nWHERE\n  $__timeFilter(start_date)\nAND\n  hk_type = 'HKQuantityTypeIdentifierStepCount'\nGROUP BY time\nORDER BY time",
+          "refId": "A",
+          "select": [
+            [
+              {
+                "params": [
+                  "value"
+                ],
+                "type": "column"
+              }
+            ]
+          ],
+          "timeColumn": "time",
+          "where": [
+            {
+              "name": "$__timeFilter",
+              "params": [],
+              "type": "macro"
+            }
+          ]
+        }
+      ],
+      "title": "How many steps per day were taken?",
+      "type": "timeseries"
+    },
+    {
+      "datasource": "Health Kit",
+      "description": "",
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "palette-classic"
+          },
+          "custom": {
+            "axisLabel": "",
+            "axisPlacement": "auto",
+            "barAlignment": 0,
+            "drawStyle": "bars",
+            "fillOpacity": 25,
+            "gradientMode": "none",
+            "hideFrom": {
+              "legend": false,
+              "tooltip": false,
+              "viz": false
+            },
+            "lineInterpolation": "linear",
+            "lineWidth": 1,
+            "pointSize": 5,
+            "scaleDistribution": {
+              "type": "linear"
+            },
+            "showPoints": "auto",
+            "spanNulls": false,
+            "stacking": {
+              "group": "A",
+              "mode": "none"
+            },
+            "thresholdsStyle": {
+              "mode": "off"
+            }
+          },
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              },
+              {
+                "color": "red",
+                "value": 80
+              }
+            ]
+          }
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 9,
+        "w": 8,
+        "x": 8,
+        "y": 20
+      },
+      "id": 13,
+      "options": {
+        "legend": {
+          "calcs": [],
+          "displayMode": "list",
+          "placement": "bottom"
+        },
+        "tooltip": {
+          "mode": "single"
+        }
+      },
+      "targets": [
+        {
+          "format": "time_series",
+          "group": [],
+          "metricColumn": "none",
+          "rawQuery": true,
+          "rawSql": "SELECT\n  $__timeGroupAlias(start_date, '1d', 0),\n  sum(hk_value) as \"Flights Climbed per Day\"\nFROM \n  public.hk_quantity_record\nWHERE\n  $__timeFilter(start_date)\nAND\n  hk_type = 'HKQuantityTypeIdentifierFlightsClimbed'\nGROUP BY time\nORDER BY time",
+          "refId": "A",
+          "select": [
+            [
+              {
+                "params": [
+                  "value"
+                ],
+                "type": "column"
+              }
+            ]
+          ],
+          "timeColumn": "time",
+          "where": [
+            {
+              "name": "$__timeFilter",
+              "params": [],
+              "type": "macro"
+            }
+          ]
+        }
+      ],
+      "title": "How many flights of stairs were climbed per day?",
+      "type": "timeseries"
+    },
+    {
+      "datasource": "Health Kit",
+      "description": "",
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "palette-classic"
+          },
+          "custom": {
+            "axisLabel": "",
+            "axisPlacement": "auto",
+            "barAlignment": 0,
+            "drawStyle": "bars",
+            "fillOpacity": 25,
+            "gradientMode": "none",
+            "hideFrom": {
+              "legend": false,
+              "tooltip": false,
+              "viz": false
+            },
+            "lineInterpolation": "linear",
+            "lineWidth": 1,
+            "pointSize": 5,
+            "scaleDistribution": {
+              "type": "linear"
+            },
+            "showPoints": "auto",
+            "spanNulls": false,
+            "stacking": {
+              "group": "A",
+              "mode": "none"
+            },
+            "thresholdsStyle": {
+              "mode": "off"
+            }
+          },
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              },
+              {
+                "color": "red",
+                "value": 80
+              }
+            ]
+          },
+          "unit": "lengthmi"
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 9,
+        "w": 8,
+        "x": 16,
+        "y": 20
+      },
+      "id": 14,
+      "options": {
+        "legend": {
+          "calcs": [],
+          "displayMode": "list",
+          "placement": "bottom"
+        },
+        "tooltip": {
+          "mode": "single"
+        }
+      },
+      "targets": [
+        {
+          "format": "time_series",
+          "group": [],
+          "metricColumn": "none",
+          "rawQuery": true,
+          "rawSql": "SELECT\n  $__timeGroupAlias(start_date, '1d', 0),\n  sum(hk_value) as \"Miles per Day\"\nFROM \n  public.hk_quantity_record\nWHERE\n  $__timeFilter(start_date)\nAND\n  hk_type = 'HKQuantityTypeIdentifierDistanceWalkingRunning'\nGROUP BY time\nORDER BY time",
+          "refId": "A",
+          "select": [
+            [
+              {
+                "params": [
+                  "value"
+                ],
+                "type": "column"
+              }
+            ]
+          ],
+          "timeColumn": "time",
+          "where": [
+            {
+              "name": "$__timeFilter",
+              "params": [],
+              "type": "macro"
+            }
+          ]
+        }
+      ],
+      "title": "How far do I walk/run each day?",
+      "type": "timeseries"
+    },
+    {
+      "datasource": "Health Kit",
+      "description": "",
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "palette-classic"
+          },
+          "custom": {
+            "axisLabel": "",
+            "axisPlacement": "auto",
+            "barAlignment": 0,
+            "drawStyle": "line",
+            "fillOpacity": 25,
+            "gradientMode": "none",
+            "hideFrom": {
+              "legend": false,
+              "tooltip": false,
+              "viz": false
+            },
+            "lineInterpolation": "smooth",
+            "lineWidth": 1,
+            "pointSize": 5,
+            "scaleDistribution": {
+              "type": "linear"
+            },
+            "showPoints": "auto",
+            "spanNulls": false,
+            "stacking": {
+              "group": "A",
+              "mode": "none"
+            },
+            "thresholdsStyle": {
+              "mode": "off"
+            }
+          },
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              },
+              {
+                "color": "red",
+                "value": 80
+              }
+            ]
+          }
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 9,
+        "w": 8,
+        "x": 0,
+        "y": 29
+      },
+      "id": 15,
+      "options": {
+        "legend": {
+          "calcs": [],
+          "displayMode": "list",
+          "placement": "bottom"
+        },
+        "tooltip": {
+          "mode": "single"
+        }
+      },
+      "targets": [
+        {
+          "format": "time_series",
+          "group": [],
+          "metricColumn": "none",
+          "rawQuery": true,
+          "rawSql": "SELECT\n  $__timeGroupAlias(start_date, '1d', NULL),\n  sum(hk_value) as \"Calories\"\nFROM \n  public.hk_quantity_record\nWHERE\n  $__timeFilter(start_date)\nAND\n  hk_type = 'HKQuantityTypeIdentifierBasalEnergyBurned'\nAND\n  hk_source = 'Nathaniel’s Apple Watch'\nGROUP BY time\nORDER BY time",
+          "refId": "A",
+          "select": [
+            [
+              {
+                "params": [
+                  "value"
+                ],
+                "type": "column"
+              }
+            ]
+          ],
+          "timeColumn": "time",
+          "where": [
+            {
+              "name": "$__timeFilter",
+              "params": [],
+              "type": "macro"
+            }
+          ]
+        }
+      ],
+      "title": "How many calories per day were burned while resting?",
+      "type": "timeseries"
+    },
+    {
+      "datasource": "Health Kit",
+      "description": "",
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "palette-classic"
+          },
+          "custom": {
+            "axisLabel": "",
+            "axisPlacement": "auto",
+            "barAlignment": 0,
+            "drawStyle": "line",
+            "fillOpacity": 25,
+            "gradientMode": "none",
+            "hideFrom": {
+              "legend": false,
+              "tooltip": false,
+              "viz": false
+            },
+            "lineInterpolation": "smooth",
+            "lineWidth": 1,
+            "pointSize": 5,
+            "scaleDistribution": {
+              "type": "linear"
+            },
+            "showPoints": "auto",
+            "spanNulls": false,
+            "stacking": {
+              "group": "A",
+              "mode": "none"
+            },
+            "thresholdsStyle": {
+              "mode": "off"
+            }
+          },
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              },
+              {
+                "color": "red",
+                "value": 80
+              }
+            ]
+          }
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 9,
+        "w": 8,
+        "x": 8,
+        "y": 29
+      },
+      "id": 16,
+      "options": {
+        "legend": {
+          "calcs": [],
+          "displayMode": "list",
+          "placement": "bottom"
+        },
+        "tooltip": {
+          "mode": "single"
+        }
+      },
+      "targets": [
+        {
+          "format": "time_series",
+          "group": [],
+          "metricColumn": "none",
+          "rawQuery": true,
+          "rawSql": "SELECT\n  $__timeGroupAlias(start_date, '1d', NULL),\n  sum(hk_value) as \"Calories\"\nFROM \n  public.hk_quantity_record\nWHERE\n  $__timeFilter(start_date)\nAND\n  hk_type = 'HKQuantityTypeIdentifierActiveEnergyBurned'\nAND\n  hk_source = 'Nathaniel’s Apple Watch'\nGROUP BY time\nORDER BY time",
+          "refId": "A",
+          "select": [
+            [
+              {
+                "params": [
+                  "value"
+                ],
+                "type": "column"
+              }
+            ]
+          ],
+          "timeColumn": "time",
+          "where": [
+            {
+              "name": "$__timeFilter",
+              "params": [],
+              "type": "macro"
+            }
+          ]
+        }
+      ],
+      "title": "How many active calories were used per day?",
+      "type": "timeseries"
+    },
+    {
+      "datasource": "Health Kit",
+      "description": "",
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "palette-classic"
+          },
+          "custom": {
+            "axisLabel": "",
+            "axisPlacement": "auto",
+            "barAlignment": 0,
+            "drawStyle": "line",
+            "fillOpacity": 25,
+            "gradientMode": "none",
+            "hideFrom": {
+              "legend": false,
+              "tooltip": false,
+              "viz": false
+            },
+            "lineInterpolation": "smooth",
+            "lineWidth": 1,
+            "pointSize": 5,
+            "scaleDistribution": {
+              "type": "linear"
+            },
+            "showPoints": "auto",
+            "spanNulls": false,
+            "stacking": {
+              "group": "A",
+              "mode": "none"
+            },
+            "thresholdsStyle": {
+              "mode": "off"
+            }
+          },
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              },
+              {
+                "color": "red",
+                "value": 80
+              }
+            ]
+          },
+          "unit": "m"
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 9,
+        "w": 8,
+        "x": 16,
+        "y": 29
+      },
+      "id": 17,
+      "options": {
+        "legend": {
+          "calcs": [],
+          "displayMode": "list",
+          "placement": "bottom"
+        },
+        "tooltip": {
+          "mode": "single"
+        }
+      },
+      "targets": [
+        {
+          "format": "time_series",
+          "group": [],
+          "metricColumn": "none",
+          "rawQuery": true,
+          "rawSql": "SELECT\n  $__timeGroupAlias(start_date, '1d', NULL),\n  sum(hk_value) as \"Exercise Time\"\nFROM \n  public.hk_quantity_record\nWHERE\n  $__timeFilter(start_date)\nAND\n  hk_type = 'HKQuantityTypeIdentifierAppleExerciseTime'\nAND\n  hk_source = 'Nathaniel’s Apple Watch'\nGROUP BY time\nORDER BY time",
+          "refId": "A",
+          "select": [
+            [
+              {
+                "params": [
+                  "value"
+                ],
+                "type": "column"
+              }
+            ]
+          ],
+          "timeColumn": "time",
+          "where": [
+            {
+              "name": "$__timeFilter",
+              "params": [],
+              "type": "macro"
+            }
+          ]
+        }
+      ],
+      "title": "How much time do I spend exercising each day?",
+      "type": "timeseries"
+    },
+    {
+      "datasource": "Health Kit",
+      "description": "",
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "palette-classic"
+          },
+          "custom": {
+            "axisLabel": "",
+            "axisPlacement": "auto",
+            "barAlignment": 0,
+            "drawStyle": "line",
+            "fillOpacity": 25,
+            "gradientMode": "none",
+            "hideFrom": {
+              "legend": false,
+              "tooltip": false,
+              "viz": false
+            },
+            "lineInterpolation": "smooth",
+            "lineWidth": 1,
+            "pointSize": 5,
+            "scaleDistribution": {
+              "type": "linear"
+            },
+            "showPoints": "auto",
+            "spanNulls": false,
+            "stacking": {
+              "group": "A",
+              "mode": "none"
+            },
+            "thresholdsStyle": {
+              "mode": "off"
+            }
+          },
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              },
+              {
+                "color": "red",
+                "value": 80
+              }
+            ]
+          },
+          "unit": "m"
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 9,
+        "w": 8,
+        "x": 16,
+        "y": 38
+      },
+      "id": 18,
+      "options": {
+        "legend": {
+          "calcs": [],
+          "displayMode": "list",
+          "placement": "bottom"
+        },
+        "tooltip": {
+          "mode": "single"
+        }
+      },
+      "targets": [
+        {
+          "format": "time_series",
+          "group": [],
+          "metricColumn": "none",
+          "rawQuery": true,
+          "rawSql": "SELECT\n  $__timeGroupAlias(start_date, '1d', NULL),\n  sum(hk_value) as \"Stand Time\"\nFROM \n  public.hk_quantity_record\nWHERE\n  $__timeFilter(start_date)\nAND\n  hk_type = 'HKQuantityTypeIdentifierAppleStandTime'\nAND\n  hk_source = 'Nathaniel’s Apple Watch'\nGROUP BY time\nORDER BY time",
+          "refId": "A",
+          "select": [
+            [
+              {
+                "params": [
+                  "value"
+                ],
+                "type": "column"
+              }
+            ]
+          ],
+          "timeColumn": "time",
+          "where": [
+            {
+              "name": "$__timeFilter",
+              "params": [],
+              "type": "macro"
+            }
+          ]
+        }
+      ],
+      "title": "How much time do I spend standing each day?",
+      "type": "timeseries"
+    },
+    {
+      "collapsed": true,
+      "datasource": null,
+      "gridPos": {
+        "h": 1,
+        "w": 24,
+        "x": 0,
+        "y": 47
+      },
+      "id": 10,
+      "panels": [
+        {
+          "aliasColors": {
+            "Body Fat %": "dark-yellow",
+            "Body Mass": "super-light-green",
+            "Lean Body Mass": "red"
+          },
+          "bars": false,
+          "dashLength": 10,
+          "dashes": false,
+          "datasource": "Health Kit",
+          "description": "",
+          "fieldConfig": {
+            "defaults": {
+              "unit": "masslb"
+            },
+            "overrides": [
+              {
+                "matcher": {
+                  "id": "byName",
+                  "options": "Body Fat %"
+                },
+                "properties": [
+                  {
+                    "id": "unit",
+                    "value": "percentunit"
+                  }
+                ]
+              }
+            ]
+          },
+          "fill": 0,
+          "fillGradient": 0,
+          "gridPos": {
+            "h": 9,
+            "w": 12,
+            "x": 0,
+            "y": 2
+          },
+          "hiddenSeries": false,
+          "id": 4,
+          "legend": {
+            "avg": false,
+            "current": false,
+            "max": false,
+            "min": false,
+            "show": true,
+            "total": false,
+            "values": false
+          },
+          "lines": true,
+          "linewidth": 1,
+          "nullPointMode": "null",
+          "options": {
+            "alertThreshold": true
+          },
+          "percentage": false,
+          "pluginVersion": "8.0.5",
+          "pointradius": 2,
+          "points": false,
+          "renderer": "flot",
+          "seriesOverrides": [
+            {
+              "$$hashKey": "object:218",
+              "alias": "Body Mass",
+              "linewidth": 2
+            },
+            {
+              "$$hashKey": "object:293",
+              "alias": "Lean Body Mass"
+            },
+            {
+              "$$hashKey": "object:302",
+              "alias": "Body Fat %",
+              "fill": 1,
+              "linewidth": 0,
+              "yaxis": 2
+            }
+          ],
+          "spaceLength": 10,
+          "stack": false,
+          "steppedLine": false,
+          "targets": [
+            {
+              "format": "time_series",
+              "group": [],
+              "metricColumn": "none",
+              "rawQuery": true,
+              "rawSql": "SELECT\n  start_date as time,\n  hk_value as \"Body Mass\"\nFROM \n  public.hk_quantity_record\nWHERE\n  $__timeFilter(start_date)\nAND\n  hk_type = 'HKQuantityTypeIdentifierBodyMass'\nORDER BY time",
+              "refId": "A",
+              "select": [
+                [
+                  {
+                    "params": [
+                      "value"
+                    ],
+                    "type": "column"
+                  }
+                ]
+              ],
+              "timeColumn": "time",
+              "where": [
+                {
+                  "name": "$__timeFilter",
+                  "params": [],
+                  "type": "macro"
+                }
+              ]
+            },
+            {
+              "format": "time_series",
+              "group": [],
+              "hide": false,
+              "metricColumn": "none",
+              "rawQuery": true,
+              "rawSql": "SELECT\n  start_date as time,\n  hk_value as \"Lean Body Mass\"\nFROM \n  public.hk_quantity_record\nWHERE\n  $__timeFilter(start_date)\nAND\n  hk_type = 'HKQuantityTypeIdentifierLeanBodyMass'\nORDER BY time",
+              "refId": "B",
+              "select": [
+                [
+                  {
+                    "params": [
+                      "value"
+                    ],
+                    "type": "column"
+                  }
+                ]
+              ],
+              "timeColumn": "time",
+              "where": [
+                {
+                  "name": "$__timeFilter",
+                  "params": [],
+                  "type": "macro"
+                }
+              ]
+            },
+            {
+              "format": "time_series",
+              "group": [],
+              "hide": false,
+              "metricColumn": "none",
+              "rawQuery": true,
+              "rawSql": "SELECT\n  start_date as time,\n  hk_value as \"Body Fat %\"\nFROM \n  public.hk_quantity_record\nWHERE\n  $__timeFilter(start_date)\nAND\n  hk_type = 'HKQuantityTypeIdentifierBodyFatPercentage'\nORDER BY time",
+              "refId": "C",
+              "select": [
+                [
+                  {
+                    "params": [
+                      "hk_value"
+                    ],
+                    "type": "column"
+                  }
+                ]
+              ],
+              "table": "hk_quantity_record",
+              "timeColumn": "creation_date",
+              "timeColumnType": "timestamp",
+              "where": [
+                {
+                  "name": "$__timeFilter",
+                  "params": [],
+                  "type": "macro"
+                }
+              ]
+            }
+          ],
+          "thresholds": [],
+          "timeFrom": null,
+          "timeRegions": [],
+          "timeShift": null,
+          "title": "How much do I weigh?",
+          "tooltip": {
+            "shared": true,
+            "sort": 0,
+            "value_type": "individual"
+          },
+          "type": "graph",
+          "xaxis": {
+            "buckets": null,
+            "mode": "time",
+            "name": null,
+            "show": true,
+            "values": []
+          },
+          "yaxes": [
+            {
+              "format": "masslb",
+              "label": null,
+              "logBase": 1,
+              "max": null,
+              "min": null,
+              "show": true
+            },
+            {
+              "format": "percentunit",
+              "label": null,
+              "logBase": 1,
+              "max": null,
+              "min": null,
+              "show": true
+            }
+          ],
+          "yaxis": {
+            "align": false,
+            "alignLevel": null
+          }
+        },
+        {
+          "datasource": "Health Kit",
+          "description": "",
+          "fieldConfig": {
+            "defaults": {
+              "color": {
+                "mode": "palette-classic"
+              },
+              "custom": {
+                "axisLabel": "",
+                "axisPlacement": "auto",
+                "barAlignment": 0,
+                "drawStyle": "line",
+                "fillOpacity": 25,
+                "gradientMode": "none",
+                "hideFrom": {
+                  "legend": false,
+                  "tooltip": false,
+                  "viz": false
+                },
+                "lineInterpolation": "smooth",
+                "lineWidth": 1,
+                "pointSize": 5,
+                "scaleDistribution": {
+                  "type": "linear"
+                },
+                "showPoints": "auto",
+                "spanNulls": false,
+                "stacking": {
+                  "group": "A",
+                  "mode": "none"
+                },
+                "thresholdsStyle": {
+                  "mode": "off"
+                }
+              },
+              "mappings": [],
+              "thresholds": {
+                "mode": "absolute",
+                "steps": [
+                  {
+                    "color": "green",
+                    "value": null
+                  },
+                  {
+                    "color": "red",
+                    "value": 80
+                  }
+                ]
+              }
+            },
+            "overrides": []
+          },
+          "gridPos": {
+            "h": 9,
+            "w": 12,
+            "x": 12,
+            "y": 2
+          },
+          "id": 8,
+          "options": {
+            "legend": {
+              "calcs": [],
+              "displayMode": "list",
+              "placement": "bottom"
+            },
+            "tooltip": {
+              "mode": "single"
+            }
+          },
+          "targets": [
+            {
+              "format": "time_series",
+              "group": [],
+              "metricColumn": "none",
+              "rawQuery": true,
+              "rawSql": "SELECT\n  start_date as time,\n  hk_value as \"BMI\"\nFROM \n  public.hk_quantity_record\nWHERE\n  $__timeFilter(start_date)\nAND\n  hk_type = 'HKQuantityTypeIdentifierBodyMassIndex'\nORDER BY time",
+              "refId": "A",
+              "select": [
+                [
+                  {
+                    "params": [
+                      "value"
+                    ],
+                    "type": "column"
+                  }
+                ]
+              ],
+              "timeColumn": "time",
+              "where": [
+                {
+                  "name": "$__timeFilter",
+                  "params": [],
+                  "type": "macro"
+                }
+              ]
+            }
+          ],
+          "title": "What is my BMI?",
+          "type": "timeseries"
+        }
+      ],
+      "title": "Body Measurements",
+      "type": "row"
     }
   ],
   "refresh": false,
@@ -645,15 +1588,40 @@
   "style": "dark",
   "tags": [],
   "templating": {
-    "list": []
+    "list": [
+      {
+        "allValue": null,
+        "current": {
+          "selected": true,
+          "text": "Nathaniel’s Apple Watch",
+          "value": "Nathaniel’s Apple Watch"
+        },
+        "datasource": "Health Kit",
+        "definition": "SELECT distinct(hk_source)\nFROM hk_quantity_record\nUNION\nSELECT distinct(hk_source)\nFROM hk_category_record\nORDER BY hk_source",
+        "description": "The source/device the data came from.",
+        "error": null,
+        "hide": 0,
+        "includeAll": false,
+        "label": "source",
+        "multi": false,
+        "name": "source",
+        "options": [],
+        "query": "SELECT distinct(hk_source)\nFROM hk_quantity_record\nUNION\nSELECT distinct(hk_source)\nFROM hk_category_record\nORDER BY hk_source",
+        "refresh": 2,
+        "regex": "",
+        "skipUrlSync": false,
+        "sort": 0,
+        "type": "query"
+      }
+    ]
   },
   "time": {
-    "from": "now-90d",
+    "from": "now-30d",
     "to": "now"
   },
   "timepicker": {},
   "timezone": "",
   "title": "Health Kit",
   "uid": "RPw0roWnz",
-  "version": 2
+  "version": 10
 }
