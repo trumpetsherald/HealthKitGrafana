@@ -34,11 +34,7 @@ Things I plan to change very soon.
 
 * Import the Me xml element into the hk_person table
   * This means linking hk_person's to hk_records
-  * Will need to reconsider approach to generating primary keys for records
-  * Or find a better way than foreign key linking metadata and users to records
-  * It also means rethinking resetting the sequences...
-* Consider breaking out the tables for query performance. 
-  * Confirm HKQuantityTypeIdentifier always has double for value
-  * Confirm HKCategoryTypeIdentifier always has string for value 
-  * If so make two tables
+  * Also means writing code to handle export_cda.xml
 * Import Workout elements
+* Import Lab Results
+* More dashboards
