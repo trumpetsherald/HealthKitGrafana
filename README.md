@@ -24,8 +24,9 @@ and place the export.xml file into the apple_health_export directory of this rep
 6. That's it! You should be able to browse your health data graphs.
 
 ## Screenshots
-![vitals](./docs/vitals.png)
+![overview](./docs/overview.png)
 ![activity](./docs/activity.png)
+![vitals](./docs/vitals.png)
 ![body_measurements](./docs/body_measurements.png)
 
 ## What's Next
