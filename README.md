@@ -29,6 +29,10 @@ and place the export.xml file into the apple_health_export directory of this rep
 ![vitals](./docs/vitals.png)
 ![body_measurements](./docs/body_measurements.png)
 
+## Known Issues
+* The queries are hard coded to US/MDT timezone. I think in the code I'll 
+want to convert timestamps to UTC before insertion in the DB.
+
 ## What's Next
 Things I plan to change very soon.
 
@@ -38,3 +42,9 @@ Things I plan to change very soon.
 * Import Workout elements
 * Import Lab Results
 * More dashboards
+
+## Helpful Links
+
+These two were ridiculously helpful:
+https://developer.apple.com/documentation/healthkit/hkquantitytypeidentifier
+https://developer.apple.com/documentation/healthkit/hkcategorytypeidentifier

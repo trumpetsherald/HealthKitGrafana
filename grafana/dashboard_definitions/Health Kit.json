@@ -15,7 +15,7 @@
   "editable": true,
   "gnetId": null,
   "graphTooltip": 0,
-  "iteration": 1627588484289,
+  "iteration": 1627750143286,
   "links": [],
   "panels": [
     {
@@ -29,6 +29,157 @@
       "id": 38,
       "title": "What is the average daily amount of...",
       "type": "row"
+    },
+    {
+      "datasource": "Health Kit",
+      "description": "",
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "thresholds"
+          },
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              },
+              {
+                "color": "red",
+                "value": 80
+              }
+            ]
+          },
+          "unit": "masslb"
+        },
+        "overrides": [
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "Body Fat %"
+            },
+            "properties": [
+              {
+                "id": "unit",
+                "value": "percentunit"
+              }
+            ]
+          }
+        ]
+      },
+      "gridPos": {
+        "h": 3,
+        "w": 12,
+        "x": 0,
+        "y": 1
+      },
+      "id": 45,
+      "options": {
+        "colorMode": "value",
+        "graphMode": "area",
+        "justifyMode": "auto",
+        "orientation": "auto",
+        "reduceOptions": {
+          "calcs": [
+            "mean"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "text": {},
+        "textMode": "auto"
+      },
+      "pluginVersion": "8.0.5",
+      "targets": [
+        {
+          "format": "time_series",
+          "group": [],
+          "metricColumn": "none",
+          "rawQuery": true,
+          "rawSql": "SELECT\n  start_date as time,\n  hk_value as \"Body Mass\"\nFROM \n  public.hk_quantity_record\nWHERE\n  $__timeFilter(start_date)\nAND\n  hk_type = 'HKQuantityTypeIdentifierBodyMass'\nORDER BY time",
+          "refId": "A",
+          "select": [
+            [
+              {
+                "params": [
+                  "value"
+                ],
+                "type": "column"
+              }
+            ]
+          ],
+          "timeColumn": "time",
+          "where": [
+            {
+              "name": "$__timeFilter",
+              "params": [],
+              "type": "macro"
+            }
+          ]
+        },
+        {
+          "format": "time_series",
+          "group": [],
+          "hide": false,
+          "metricColumn": "none",
+          "rawQuery": true,
+          "rawSql": "SELECT\n  start_date as time,\n  hk_value as \"Lean Body Mass\"\nFROM \n  public.hk_quantity_record\nWHERE\n  $__timeFilter(start_date)\nAND\n  hk_type = 'HKQuantityTypeIdentifierLeanBodyMass'\nORDER BY time",
+          "refId": "B",
+          "select": [
+            [
+              {
+                "params": [
+                  "value"
+                ],
+                "type": "column"
+              }
+            ]
+          ],
+          "timeColumn": "time",
+          "where": [
+            {
+              "name": "$__timeFilter",
+              "params": [],
+              "type": "macro"
+            }
+          ]
+        },
+        {
+          "format": "time_series",
+          "group": [],
+          "hide": false,
+          "metricColumn": "none",
+          "rawQuery": true,
+          "rawSql": "SELECT\n  start_date as time,\n  hk_value as \"Body Fat %\"\nFROM \n  public.hk_quantity_record\nWHERE\n  $__timeFilter(start_date)\nAND\n  hk_type = 'HKQuantityTypeIdentifierBodyFatPercentage'\nORDER BY time",
+          "refId": "C",
+          "select": [
+            [
+              {
+                "params": [
+                  "hk_value"
+                ],
+                "type": "column"
+              }
+            ]
+          ],
+          "table": "hk_quantity_record",
+          "timeColumn": "creation_date",
+          "timeColumnType": "timestamp",
+          "where": [
+            {
+              "name": "$__timeFilter",
+              "params": [],
+              "type": "macro"
+            }
+          ]
+        }
+      ],
+      "timeFrom": null,
+      "timeShift": null,
+      "title": "How much do I weigh?",
+      "type": "stat"
     },
     {
       "datasource": "Health Kit",
@@ -74,8 +225,8 @@
       },
       "gridPos": {
         "h": 3,
-        "w": 5,
-        "x": 0,
+        "w": 6,
+        "x": 12,
         "y": 1
       },
       "id": 34,
@@ -137,89 +288,6 @@
       "fieldConfig": {
         "defaults": {
           "color": {
-            "fixedColor": "dark-purple",
-            "mode": "fixed"
-          },
-          "mappings": [],
-          "thresholds": {
-            "mode": "absolute",
-            "steps": [
-              {
-                "color": "green",
-                "value": null
-              },
-              {
-                "color": "red",
-                "value": 80
-              }
-            ]
-          },
-          "unit": "m"
-        },
-        "overrides": []
-      },
-      "gridPos": {
-        "h": 3,
-        "w": 5,
-        "x": 5,
-        "y": 1
-      },
-      "id": 35,
-      "options": {
-        "colorMode": "value",
-        "graphMode": "area",
-        "justifyMode": "auto",
-        "orientation": "auto",
-        "reduceOptions": {
-          "calcs": [
-            "mean"
-          ],
-          "fields": "",
-          "values": false
-        },
-        "text": {
-          "valueSize": 50
-        },
-        "textMode": "auto"
-      },
-      "pluginVersion": "8.0.5",
-      "targets": [
-        {
-          "format": "time_series",
-          "group": [],
-          "metricColumn": "none",
-          "rawQuery": true,
-          "rawSql": "SELECT\n  $__timeGroupAlias(start_date, '1d', NULL),\n  sum(hk_value) as \"Stand Time\"\nFROM \n  public.hk_quantity_record\nWHERE\n  $__timeFilter(start_date)\nAND\n  hk_type = 'HKQuantityTypeIdentifierAppleStandTime'\nAND\n  hk_source = 'Nathaniel’s Apple Watch'\nGROUP BY time\nORDER BY time",
-          "refId": "A",
-          "select": [
-            [
-              {
-                "params": [
-                  "value"
-                ],
-                "type": "column"
-              }
-            ]
-          ],
-          "timeColumn": "time",
-          "where": [
-            {
-              "name": "$__timeFilter",
-              "params": [],
-              "type": "macro"
-            }
-          ]
-        }
-      ],
-      "title": "...time spent standing?",
-      "type": "stat"
-    },
-    {
-      "datasource": "Health Kit",
-      "description": "",
-      "fieldConfig": {
-        "defaults": {
-          "color": {
             "fixedColor": "dark-red",
             "mode": "fixed"
           },
@@ -243,8 +311,8 @@
       },
       "gridPos": {
         "h": 3,
-        "w": 5,
-        "x": 10,
+        "w": 6,
+        "x": 18,
         "y": 1
       },
       "id": 36,
@@ -314,26 +382,61 @@
           },
           "mappings": []
         },
-        "overrides": []
+        "overrides": [
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "Active"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "fixedColor": "semi-dark-yellow",
+                  "mode": "fixed"
+                }
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "Resting"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "fixedColor": "blue",
+                  "mode": "fixed"
+                }
+              }
+            ]
+          }
+        ]
       },
       "gridPos": {
         "h": 6,
         "w": 6,
-        "x": 18,
-        "y": 1
+        "x": 0,
+        "y": 4
       },
       "id": 39,
       "options": {
         "displayLabels": [
           "percent",
-          "name",
-          "value"
+          "value",
+          "name"
         ],
         "legend": {
           "displayMode": "hidden",
-          "placement": "right"
+          "placement": "bottom",
+          "values": [
+            "percent",
+            "value"
+          ]
         },
-        "pieType": "donut",
+        "pieType": "pie",
         "reduceOptions": {
           "calcs": [
             "mean"
@@ -449,8 +552,8 @@
       },
       "gridPos": {
         "h": 3,
-        "w": 5,
-        "x": 0,
+        "w": 6,
+        "x": 6,
         "y": 4
       },
       "id": 42,
@@ -551,8 +654,8 @@
       },
       "gridPos": {
         "h": 3,
-        "w": 5,
-        "x": 5,
+        "w": 6,
+        "x": 12,
         "y": 4
       },
       "id": 40,
@@ -630,7 +733,7 @@
               }
             ]
           },
-          "unit": "none"
+          "unit": "lengthmi"
         },
         "overrides": [
           {
@@ -652,8 +755,8 @@
       },
       "gridPos": {
         "h": 3,
-        "w": 5,
-        "x": 10,
+        "w": 6,
+        "x": 18,
         "y": 4
       },
       "id": 41,
@@ -710,13 +813,186 @@
       "type": "stat"
     },
     {
+      "datasource": "Health Kit",
+      "description": "",
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "fixedColor": "dark-purple",
+            "mode": "fixed"
+          },
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              },
+              {
+                "color": "red",
+                "value": 80
+              }
+            ]
+          },
+          "unit": "m"
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 3,
+        "w": 6,
+        "x": 6,
+        "y": 7
+      },
+      "id": 35,
+      "options": {
+        "colorMode": "value",
+        "graphMode": "area",
+        "justifyMode": "auto",
+        "orientation": "auto",
+        "reduceOptions": {
+          "calcs": [
+            "mean"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "text": {
+          "valueSize": 50
+        },
+        "textMode": "auto"
+      },
+      "pluginVersion": "8.0.5",
+      "targets": [
+        {
+          "format": "time_series",
+          "group": [],
+          "metricColumn": "none",
+          "rawQuery": true,
+          "rawSql": "SELECT\n  $__timeGroupAlias(start_date, '1d', NULL),\n  sum(hk_value) as \"Stand Time\"\nFROM \n  public.hk_quantity_record\nWHERE\n  $__timeFilter(start_date)\nAND\n  hk_type = 'HKQuantityTypeIdentifierAppleStandTime'\nAND\n  hk_source = 'Nathaniel’s Apple Watch'\nGROUP BY time\nORDER BY time",
+          "refId": "A",
+          "select": [
+            [
+              {
+                "params": [
+                  "value"
+                ],
+                "type": "column"
+              }
+            ]
+          ],
+          "timeColumn": "time",
+          "where": [
+            {
+              "name": "$__timeFilter",
+              "params": [],
+              "type": "macro"
+            }
+          ]
+        }
+      ],
+      "title": "...time spent standing?",
+      "type": "stat"
+    },
+    {
+      "datasource": "Health Kit",
+      "description": "",
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "fixedColor": "purple",
+            "mode": "fixed"
+          },
+          "mappings": [],
+          "max": 24,
+          "min": 0,
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              },
+              {
+                "color": "super-light-purple",
+                "value": 24
+              }
+            ]
+          },
+          "unit": "none"
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 3,
+        "w": 6,
+        "x": 12,
+        "y": 7
+      },
+      "id": 44,
+      "options": {
+        "colorMode": "value",
+        "graphMode": "area",
+        "justifyMode": "auto",
+        "orientation": "auto",
+        "reduceOptions": {
+          "calcs": [
+            "mean"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "text": {
+          "valueSize": 50
+        },
+        "textMode": "auto"
+      },
+      "pluginVersion": "8.0.5",
+      "targets": [
+        {
+          "format": "time_series",
+          "group": [],
+          "metricColumn": "none",
+          "queryType": "randomWalk",
+          "rawQuery": true,
+          "rawSql": "select\n  $__timeGroupAlias(start_date, '1d', 0),\n  count(hk_value) as \"# of Hour Stood 1 min\"\nfrom hk_category_record \nwhere \n  $__timeFilter(start_date)\nAND\n  hk_type = 'HKCategoryTypeIdentifierAppleStandHour'\nAND\n  hk_value = 'HKCategoryValueAppleStandHourStood'\nGROUP BY time\nORDER BY time",
+          "refId": "A",
+          "select": [
+            [
+              {
+                "params": [
+                  "hk_value"
+                ],
+                "type": "column"
+              }
+            ]
+          ],
+          "table": "hk_quantity_record",
+          "timeColumn": "creation_date",
+          "timeColumnType": "timestamp",
+          "where": [
+            {
+              "name": "$__timeFilter",
+              "params": [],
+              "type": "macro"
+            }
+          ]
+        }
+      ],
+      "timeFrom": null,
+      "timeShift": null,
+      "title": "... stand hours per day?",
+      "type": "stat"
+    },
+    {
       "collapsed": false,
       "datasource": null,
       "gridPos": {
         "h": 1,
         "w": 24,
         "x": 0,
-        "y": 7
+        "y": 10
       },
       "id": 12,
       "panels": [],
@@ -736,7 +1012,7 @@
             "axisPlacement": "auto",
             "barAlignment": 0,
             "drawStyle": "bars",
-            "fillOpacity": 75,
+            "fillOpacity": 50,
             "gradientMode": "opacity",
             "hideFrom": {
               "legend": false,
@@ -744,7 +1020,7 @@
               "viz": false
             },
             "lineInterpolation": "linear",
-            "lineWidth": 2,
+            "lineWidth": 3,
             "pointSize": 5,
             "scaleDistribution": {
               "type": "linear"
@@ -797,7 +1073,7 @@
         "h": 9,
         "w": 8,
         "x": 0,
-        "y": 8
+        "y": 11
       },
       "id": 32,
       "options": {
@@ -858,20 +1134,20 @@
             "axisPlacement": "auto",
             "barAlignment": 0,
             "drawStyle": "bars",
-            "fillOpacity": 25,
-            "gradientMode": "none",
+            "fillOpacity": 50,
+            "gradientMode": "opacity",
             "hideFrom": {
               "legend": false,
               "tooltip": false,
               "viz": false
             },
             "lineInterpolation": "smooth",
-            "lineWidth": 1,
+            "lineWidth": 3,
             "pointSize": 5,
             "scaleDistribution": {
               "type": "linear"
             },
-            "showPoints": "auto",
+            "showPoints": "never",
             "spanNulls": false,
             "stacking": {
               "group": "A",
@@ -919,7 +1195,7 @@
         "h": 9,
         "w": 8,
         "x": 8,
-        "y": 8
+        "y": 11
       },
       "id": 18,
       "options": {
@@ -977,20 +1253,20 @@
             "axisSoftMin": 0,
             "barAlignment": 0,
             "drawStyle": "bars",
-            "fillOpacity": 25,
-            "gradientMode": "none",
+            "fillOpacity": 50,
+            "gradientMode": "opacity",
             "hideFrom": {
               "legend": false,
               "tooltip": false,
               "viz": false
             },
             "lineInterpolation": "smooth",
-            "lineWidth": 1,
+            "lineWidth": 3,
             "pointSize": 5,
             "scaleDistribution": {
               "type": "linear"
             },
-            "showPoints": "auto",
+            "showPoints": "never",
             "spanNulls": false,
             "stacking": {
               "group": "A",
@@ -1038,7 +1314,7 @@
         "h": 9,
         "w": 8,
         "x": 16,
-        "y": 8
+        "y": 11
       },
       "id": 17,
       "options": {
@@ -1095,20 +1371,20 @@
             "axisPlacement": "auto",
             "barAlignment": 0,
             "drawStyle": "bars",
-            "fillOpacity": 25,
-            "gradientMode": "none",
+            "fillOpacity": 50,
+            "gradientMode": "opacity",
             "hideFrom": {
               "legend": false,
               "tooltip": false,
               "viz": false
             },
             "lineInterpolation": "smooth",
-            "lineWidth": 1,
+            "lineWidth": 3,
             "pointSize": 5,
             "scaleDistribution": {
               "type": "linear"
             },
-            "showPoints": "auto",
+            "showPoints": "never",
             "spanNulls": false,
             "stacking": {
               "group": "A",
@@ -1158,7 +1434,7 @@
               {
                 "id": "color",
                 "value": {
-                  "fixedColor": "light-yellow",
+                  "fixedColor": "yellow",
                   "mode": "fixed"
                 }
               }
@@ -1170,7 +1446,7 @@
         "h": 9,
         "w": 8,
         "x": 0,
-        "y": 17
+        "y": 20
       },
       "id": 15,
       "options": {
@@ -1255,20 +1531,20 @@
             "axisPlacement": "auto",
             "barAlignment": 0,
             "drawStyle": "bars",
-            "fillOpacity": 25,
-            "gradientMode": "none",
+            "fillOpacity": 50,
+            "gradientMode": "opacity",
             "hideFrom": {
               "legend": false,
               "tooltip": false,
               "viz": false
             },
             "lineInterpolation": "linear",
-            "lineWidth": 1,
+            "lineWidth": 3,
             "pointSize": 5,
             "scaleDistribution": {
               "type": "linear"
             },
-            "showPoints": "auto",
+            "showPoints": "never",
             "spanNulls": false,
             "stacking": {
               "group": "A",
@@ -1315,7 +1591,7 @@
         "h": 9,
         "w": 8,
         "x": 8,
-        "y": 17
+        "y": 20
       },
       "id": 2,
       "options": {
@@ -1373,20 +1649,20 @@
             "axisPlacement": "auto",
             "barAlignment": 0,
             "drawStyle": "bars",
-            "fillOpacity": 25,
-            "gradientMode": "none",
+            "fillOpacity": 50,
+            "gradientMode": "opacity",
             "hideFrom": {
               "legend": false,
               "tooltip": false,
               "viz": false
             },
             "lineInterpolation": "linear",
-            "lineWidth": 1,
+            "lineWidth": 3,
             "pointSize": 5,
             "scaleDistribution": {
               "type": "linear"
             },
-            "showPoints": "auto",
+            "showPoints": "never",
             "spanNulls": false,
             "stacking": {
               "group": "A",
@@ -1433,7 +1709,7 @@
         "h": 9,
         "w": 8,
         "x": 16,
-        "y": 17
+        "y": 20
       },
       "id": 13,
       "options": {
@@ -1490,20 +1766,20 @@
             "axisPlacement": "auto",
             "barAlignment": 0,
             "drawStyle": "bars",
-            "fillOpacity": 25,
-            "gradientMode": "none",
+            "fillOpacity": 50,
+            "gradientMode": "opacity",
             "hideFrom": {
               "legend": false,
               "tooltip": false,
               "viz": false
             },
             "lineInterpolation": "linear",
-            "lineWidth": 1,
+            "lineWidth": 3,
             "pointSize": 5,
             "scaleDistribution": {
               "type": "linear"
             },
-            "showPoints": "auto",
+            "showPoints": "never",
             "spanNulls": false,
             "stacking": {
               "group": "A",
@@ -1551,7 +1827,7 @@
         "h": 9,
         "w": 8,
         "x": 0,
-        "y": 26
+        "y": 29
       },
       "id": 14,
       "options": {
@@ -1601,34 +1877,40 @@
       "fieldConfig": {
         "defaults": {
           "color": {
+            "fixedColor": "purple",
             "mode": "fixed"
           },
           "custom": {
-            "fillOpacity": 70,
-            "lineWidth": 1
-          },
-          "mappings": [
-            {
-              "options": {
-                "0": {
-                  "color": "dark-red",
-                  "index": 1,
-                  "text": "Didn't Stand"
-                },
-                "1": {
-                  "color": "dark-green",
-                  "index": 2,
-                  "text": "Stood"
-                },
-                "-1": {
-                  "color": "dark-purple",
-                  "index": 0,
-                  "text": "No Data"
-                }
-              },
-              "type": "value"
+            "axisLabel": "",
+            "axisPlacement": "auto",
+            "barAlignment": 0,
+            "drawStyle": "bars",
+            "fillOpacity": 50,
+            "gradientMode": "opacity",
+            "hideFrom": {
+              "legend": false,
+              "tooltip": false,
+              "viz": false
+            },
+            "lineInterpolation": "linear",
+            "lineWidth": 3,
+            "pointSize": 5,
+            "scaleDistribution": {
+              "type": "linear"
+            },
+            "showPoints": "never",
+            "spanNulls": true,
+            "stacking": {
+              "group": "A",
+              "mode": "none"
+            },
+            "thresholdsStyle": {
+              "mode": "line"
             }
-          ],
+          },
+          "mappings": [],
+          "max": 24,
+          "min": 0,
           "thresholds": {
             "mode": "absolute",
             "steps": [
@@ -1637,8 +1919,8 @@
                 "value": null
               },
               {
-                "color": "red",
-                "value": 80
+                "color": "super-light-purple",
+                "value": 24
               }
             ]
           },
@@ -1648,19 +1930,17 @@
       },
       "gridPos": {
         "h": 9,
-        "w": 12,
+        "w": 8,
         "x": 8,
-        "y": 26
+        "y": 29
       },
       "id": 33,
       "options": {
-        "colWidth": 0.9,
         "legend": {
+          "calcs": [],
           "displayMode": "list",
           "placement": "bottom"
         },
-        "rowHeight": 0.9,
-        "showValue": "never",
         "tooltip": {
           "mode": "single"
         }
@@ -1673,7 +1953,7 @@
           "metricColumn": "none",
           "queryType": "randomWalk",
           "rawQuery": true,
-          "rawSql": "select\n  $__timeGroupAlias(start_date, '1h', -1),\n  CASE\n    WHEN hk_value = 'HKCategoryValueAppleStandHourStood' THEN 1\n    WHEN hk_value = 'HKCategoryValueAppleStandHourIdle' THEN 0\n  END as \"Standing Status\"\nfrom hk_category_record \nwhere \n  $__timeFilter(start_date)\nAND\n  hk_type = 'HKCategoryTypeIdentifierAppleStandHour'\nORDER BY time",
+          "rawSql": "select\n  $__timeGroupAlias(start_date, '1d', 0),\n  count(hk_value) as \"# of Hour Stood 1 min\"\nfrom hk_category_record \nwhere \n  $__timeFilter(start_date)\nAND\n  hk_type = 'HKCategoryTypeIdentifierAppleStandHour'\nAND\n  hk_value = 'HKCategoryValueAppleStandHourStood'\nGROUP BY time\nORDER BY time",
           "refId": "A",
           "select": [
             [
@@ -1697,8 +1977,10 @@
           ]
         }
       ],
-      "title": "When did I stand?",
-      "type": "status-history"
+      "timeFrom": null,
+      "timeShift": null,
+      "title": "How many stand hours do I have per day?",
+      "type": "timeseries"
     },
     {
       "collapsed": false,
@@ -1707,7 +1989,7 @@
         "h": 1,
         "w": 24,
         "x": 0,
-        "y": 35
+        "y": 38
       },
       "id": 10,
       "panels": [],
@@ -1750,7 +2032,7 @@
         "h": 9,
         "w": 12,
         "x": 0,
-        "y": 36
+        "y": 39
       },
       "hiddenSeries": false,
       "id": 4,
@@ -1977,7 +2259,7 @@
         "h": 9,
         "w": 12,
         "x": 12,
-        "y": 36
+        "y": 39
       },
       "id": 8,
       "options": {
@@ -2028,12 +2310,324 @@
         "h": 1,
         "w": 24,
         "x": 0,
-        "y": 45
+        "y": 48
       },
       "id": 20,
       "panels": [],
       "title": "Vital Signs",
       "type": "row"
+    },
+    {
+      "datasource": "Health Kit",
+      "description": "",
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "palette-classic"
+          },
+          "custom": {
+            "axisLabel": "",
+            "axisPlacement": "auto",
+            "barAlignment": 0,
+            "drawStyle": "line",
+            "fillOpacity": 50,
+            "gradientMode": "opacity",
+            "hideFrom": {
+              "legend": false,
+              "tooltip": false,
+              "viz": false
+            },
+            "lineInterpolation": "smooth",
+            "lineWidth": 3,
+            "pointSize": 5,
+            "scaleDistribution": {
+              "type": "linear"
+            },
+            "showPoints": "auto",
+            "spanNulls": false,
+            "stacking": {
+              "group": "A",
+              "mode": "none"
+            },
+            "thresholdsStyle": {
+              "mode": "off"
+            }
+          },
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              },
+              {
+                "color": "red",
+                "value": 80
+              }
+            ]
+          },
+          "unit": "BPM"
+        },
+        "overrides": [
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "min"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "fixedColor": "super-light-purple",
+                  "mode": "fixed"
+                }
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "max"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "fixedColor": "red",
+                  "mode": "fixed"
+                }
+              },
+              {
+                "id": "custom.fillBelowTo",
+                "value": "avg"
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "avg"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "fixedColor": "purple",
+                  "mode": "fixed"
+                }
+              },
+              {
+                "id": "custom.fillBelowTo",
+                "value": "min"
+              }
+            ]
+          }
+        ]
+      },
+      "gridPos": {
+        "h": 9,
+        "w": 12,
+        "x": 0,
+        "y": 49
+      },
+      "id": 5,
+      "options": {
+        "legend": {
+          "calcs": [],
+          "displayMode": "list",
+          "placement": "bottom"
+        },
+        "tooltip": {
+          "mode": "single"
+        }
+      },
+      "targets": [
+        {
+          "format": "time_series",
+          "group": [],
+          "metricColumn": "none",
+          "rawQuery": true,
+          "rawSql": "SELECT\n  date_trunc('day', start_date AT TIME ZONE 'MDT') as time,\n  min(hk_value),\n  avg(hk_value),\n  max(hk_value)\nFROM \n  public.hk_quantity_record\nWHERE\n  $__timeFilter(start_date)\nAND\n  hk_type = 'HKQuantityTypeIdentifierHeartRate'\nGROUP BY time\nORDER BY time",
+          "refId": "A",
+          "select": [
+            [
+              {
+                "params": [
+                  "value"
+                ],
+                "type": "column"
+              }
+            ]
+          ],
+          "timeColumn": "time",
+          "where": [
+            {
+              "name": "$__timeFilter",
+              "params": [],
+              "type": "macro"
+            }
+          ]
+        }
+      ],
+      "title": "What is my daily heart rate?",
+      "type": "timeseries"
+    },
+    {
+      "datasource": "Health Kit",
+      "description": "",
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "palette-classic"
+          },
+          "custom": {
+            "axisLabel": "",
+            "axisPlacement": "auto",
+            "barAlignment": 0,
+            "drawStyle": "line",
+            "fillOpacity": 50,
+            "gradientMode": "opacity",
+            "hideFrom": {
+              "legend": false,
+              "tooltip": false,
+              "viz": false
+            },
+            "lineInterpolation": "smooth",
+            "lineWidth": 3,
+            "pointSize": 5,
+            "scaleDistribution": {
+              "type": "linear"
+            },
+            "showPoints": "auto",
+            "spanNulls": false,
+            "stacking": {
+              "group": "A",
+              "mode": "none"
+            },
+            "thresholdsStyle": {
+              "mode": "off"
+            }
+          },
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              },
+              {
+                "color": "red",
+                "value": 80
+              }
+            ]
+          },
+          "unit": "percentunit"
+        },
+        "overrides": [
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "max"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "fixedColor": "blue",
+                  "mode": "fixed"
+                }
+              },
+              {
+                "id": "custom.fillBelowTo",
+                "value": "avg"
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "avg"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "fixedColor": "orange",
+                  "mode": "fixed"
+                }
+              },
+              {
+                "id": "custom.fillBelowTo",
+                "value": "min"
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "min"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "fixedColor": "super-light-orange",
+                  "mode": "fixed"
+                }
+              }
+            ]
+          }
+        ]
+      },
+      "gridPos": {
+        "h": 9,
+        "w": 12,
+        "x": 12,
+        "y": 49
+      },
+      "id": 21,
+      "options": {
+        "legend": {
+          "calcs": [],
+          "displayMode": "list",
+          "placement": "bottom"
+        },
+        "tooltip": {
+          "mode": "single"
+        }
+      },
+      "targets": [
+        {
+          "format": "time_series",
+          "group": [],
+          "metricColumn": "none",
+          "rawQuery": true,
+          "rawSql": "SELECT\n  date_trunc('day', start_date AT TIME ZONE 'MDT') as time,\n  min(hk_value),\n  avg(hk_value),\n  max(hk_value)\nFROM \n  public.hk_quantity_record\nWHERE\n  $__timeFilter(start_date)\nAND\n  hk_type = 'HKQuantityTypeIdentifierOxygenSaturation'\nGROUP BY time\nORDER BY time",
+          "refId": "A",
+          "select": [
+            [
+              {
+                "params": [
+                  "value"
+                ],
+                "type": "column"
+              }
+            ]
+          ],
+          "timeColumn": "time",
+          "where": [
+            {
+              "name": "$__timeFilter",
+              "params": [],
+              "type": "macro"
+            }
+          ]
+        }
+      ],
+      "title": "What is my O2 Saturation?",
+      "type": "timeseries"
     },
     {
       "datasource": "Health Kit",
@@ -2089,9 +2683,9 @@
       },
       "gridPos": {
         "h": 9,
-        "w": 8,
+        "w": 12,
         "x": 0,
-        "y": 46
+        "y": 58
       },
       "id": 3,
       "options": {
@@ -2110,7 +2704,7 @@
           "group": [],
           "metricColumn": "none",
           "rawQuery": true,
-          "rawSql": "SELECT\n  start_date as time,\n  hk_value as \"Resting Heart Rate\"\nFROM \n  public.hk_quantity_record\nWHERE\n  $__timeFilter(start_date)\nAND\n  hk_type = 'HKQuantityTypeIdentifierRestingHeartRate'\nORDER BY time",
+          "rawSql": "SELECT\n  start_date as time,\n  hk_value as \"Resting\"\nFROM \n  public.hk_quantity_record\nWHERE\n  $__timeFilter(start_date)\nAND\n  hk_type = 'HKQuantityTypeIdentifierRestingHeartRate'\nORDER BY time",
           "refId": "A",
           "select": [
             [
@@ -2130,101 +2724,28 @@
               "type": "macro"
             }
           ]
-        }
-      ],
-      "title": "What is my resting heart rate?",
-      "type": "timeseries"
-    },
-    {
-      "datasource": "Health Kit",
-      "description": "",
-      "fieldConfig": {
-        "defaults": {
-          "color": {
-            "mode": "palette-classic"
-          },
-          "custom": {
-            "axisLabel": "",
-            "axisPlacement": "auto",
-            "barAlignment": 0,
-            "drawStyle": "line",
-            "fillOpacity": 25,
-            "gradientMode": "none",
-            "hideFrom": {
-              "legend": false,
-              "tooltip": false,
-              "viz": false
-            },
-            "lineInterpolation": "smooth",
-            "lineWidth": 1,
-            "pointSize": 5,
-            "scaleDistribution": {
-              "type": "linear"
-            },
-            "showPoints": "auto",
-            "spanNulls": false,
-            "stacking": {
-              "group": "A",
-              "mode": "none"
-            },
-            "thresholdsStyle": {
-              "mode": "off"
-            }
-          },
-          "mappings": [],
-          "thresholds": {
-            "mode": "absolute",
-            "steps": [
-              {
-                "color": "green",
-                "value": null
-              },
-              {
-                "color": "red",
-                "value": 80
-              }
-            ]
-          },
-          "unit": "BPM"
         },
-        "overrides": []
-      },
-      "gridPos": {
-        "h": 9,
-        "w": 8,
-        "x": 8,
-        "y": 46
-      },
-      "id": 5,
-      "options": {
-        "legend": {
-          "calcs": [],
-          "displayMode": "list",
-          "placement": "bottom"
-        },
-        "tooltip": {
-          "mode": "single"
-        }
-      },
-      "targets": [
         {
           "format": "time_series",
           "group": [],
+          "hide": false,
           "metricColumn": "none",
           "rawQuery": true,
-          "rawSql": "SELECT\n  start_date as time,\n  hk_value as \"Heart Rate\"\nFROM \n  public.hk_quantity_record\nWHERE\n  $__timeFilter(start_date)\nAND\n  hk_type = 'HKQuantityTypeIdentifierHeartRate'\nORDER BY time",
-          "refId": "A",
+          "rawSql": "SELECT\n  start_date as time,\n  hk_value as \"Walking\"\nFROM \n  public.hk_quantity_record\nWHERE\n  $__timeFilter(start_date)\nAND\n  hk_type = 'HKQuantityTypeIdentifierWalkingHeartRateAverage'\nORDER BY time",
+          "refId": "B",
           "select": [
             [
               {
                 "params": [
-                  "value"
+                  "hk_value"
                 ],
                 "type": "column"
               }
             ]
           ],
-          "timeColumn": "time",
+          "table": "hk_quantity_record",
+          "timeColumn": "creation_date",
+          "timeColumnType": "timestamp",
           "where": [
             {
               "name": "$__timeFilter",
@@ -2234,109 +2755,7 @@
           ]
         }
       ],
-      "title": "What is my heart rate?",
-      "type": "timeseries"
-    },
-    {
-      "datasource": "Health Kit",
-      "description": "",
-      "fieldConfig": {
-        "defaults": {
-          "color": {
-            "mode": "palette-classic"
-          },
-          "custom": {
-            "axisLabel": "",
-            "axisPlacement": "auto",
-            "barAlignment": 0,
-            "drawStyle": "line",
-            "fillOpacity": 25,
-            "gradientMode": "none",
-            "hideFrom": {
-              "legend": false,
-              "tooltip": false,
-              "viz": false
-            },
-            "lineInterpolation": "smooth",
-            "lineWidth": 1,
-            "pointSize": 5,
-            "scaleDistribution": {
-              "type": "linear"
-            },
-            "showPoints": "auto",
-            "spanNulls": false,
-            "stacking": {
-              "group": "A",
-              "mode": "none"
-            },
-            "thresholdsStyle": {
-              "mode": "off"
-            }
-          },
-          "mappings": [],
-          "thresholds": {
-            "mode": "absolute",
-            "steps": [
-              {
-                "color": "green",
-                "value": null
-              },
-              {
-                "color": "red",
-                "value": 80
-              }
-            ]
-          },
-          "unit": "BPM"
-        },
-        "overrides": []
-      },
-      "gridPos": {
-        "h": 9,
-        "w": 8,
-        "x": 16,
-        "y": 46
-      },
-      "id": 23,
-      "options": {
-        "legend": {
-          "calcs": [],
-          "displayMode": "list",
-          "placement": "bottom"
-        },
-        "tooltip": {
-          "mode": "single"
-        }
-      },
-      "targets": [
-        {
-          "format": "time_series",
-          "group": [],
-          "metricColumn": "none",
-          "rawQuery": true,
-          "rawSql": "SELECT\n  start_date as time,\n  hk_value as \"Heart Rate\"\nFROM \n  public.hk_quantity_record\nWHERE\n  $__timeFilter(start_date)\nAND\n  hk_type = 'HKQuantityTypeIdentifierWalkingHeartRateAverage'\nORDER BY time",
-          "refId": "A",
-          "select": [
-            [
-              {
-                "params": [
-                  "value"
-                ],
-                "type": "column"
-              }
-            ]
-          ],
-          "timeColumn": "time",
-          "where": [
-            {
-              "name": "$__timeFilter",
-              "params": [],
-              "type": "macro"
-            }
-          ]
-        }
-      ],
-      "title": "What is my average walking heart rate?",
+      "title": "What are my average resting and walking heart rates?",
       "type": "timeseries"
     },
     {
@@ -2395,9 +2814,9 @@
       },
       "gridPos": {
         "h": 9,
-        "w": 8,
-        "x": 0,
-        "y": 55
+        "w": 12,
+        "x": 12,
+        "y": 58
       },
       "id": 22,
       "options": {
@@ -2416,7 +2835,7 @@
           "group": [],
           "metricColumn": "none",
           "rawQuery": true,
-          "rawSql": "SELECT\n  start_date as time,\n  hk_value as \"Heart Rate Variability\"\nFROM \n  public.hk_quantity_record\nWHERE\n  $__timeFilter(start_date)\nAND\n  hk_type = 'HKQuantityTypeIdentifierHeartRateVariabilitySDNN'\nORDER BY time",
+          "rawSql": "SELECT\n  date_trunc('day', start_date AT TIME ZONE 'MDT') as time,\n  min(hk_value),\n  avg(hk_value),\n  max(hk_value)\nFROM \n  public.hk_quantity_record\nWHERE\n  $__timeFilter(start_date)\nAND\n  hk_type = 'HKQuantityTypeIdentifierHeartRateVariabilitySDNN'\nGROUP BY time\nORDER BY time",
           "refId": "A",
           "select": [
             [
@@ -2442,114 +2861,13 @@
       "type": "timeseries"
     },
     {
-      "datasource": "Health Kit",
-      "description": "",
-      "fieldConfig": {
-        "defaults": {
-          "color": {
-            "mode": "palette-classic"
-          },
-          "custom": {
-            "axisLabel": "",
-            "axisPlacement": "auto",
-            "barAlignment": 0,
-            "drawStyle": "line",
-            "fillOpacity": 25,
-            "gradientMode": "none",
-            "hideFrom": {
-              "legend": false,
-              "tooltip": false,
-              "viz": false
-            },
-            "lineInterpolation": "smooth",
-            "lineWidth": 1,
-            "pointSize": 5,
-            "scaleDistribution": {
-              "type": "linear"
-            },
-            "showPoints": "auto",
-            "spanNulls": false,
-            "stacking": {
-              "group": "A",
-              "mode": "none"
-            },
-            "thresholdsStyle": {
-              "mode": "off"
-            }
-          },
-          "mappings": [],
-          "thresholds": {
-            "mode": "absolute",
-            "steps": [
-              {
-                "color": "green",
-                "value": null
-              },
-              {
-                "color": "red",
-                "value": 80
-              }
-            ]
-          }
-        },
-        "overrides": []
-      },
-      "gridPos": {
-        "h": 9,
-        "w": 8,
-        "x": 16,
-        "y": 55
-      },
-      "id": 21,
-      "options": {
-        "legend": {
-          "calcs": [],
-          "displayMode": "list",
-          "placement": "bottom"
-        },
-        "tooltip": {
-          "mode": "single"
-        }
-      },
-      "targets": [
-        {
-          "format": "time_series",
-          "group": [],
-          "metricColumn": "none",
-          "rawQuery": true,
-          "rawSql": "SELECT\n  start_date as time,\n  hk_value as \"O2 Saturation\"\nFROM \n  public.hk_quantity_record\nWHERE\n  $__timeFilter(start_date)\nAND\n  hk_type = 'HKQuantityTypeIdentifierOxygenSaturation'\nORDER BY time",
-          "refId": "A",
-          "select": [
-            [
-              {
-                "params": [
-                  "value"
-                ],
-                "type": "column"
-              }
-            ]
-          ],
-          "timeColumn": "time",
-          "where": [
-            {
-              "name": "$__timeFilter",
-              "params": [],
-              "type": "macro"
-            }
-          ]
-        }
-      ],
-      "title": "What is my O2 Saturation?",
-      "type": "timeseries"
-    },
-    {
       "collapsed": false,
       "datasource": null,
       "gridPos": {
         "h": 1,
         "w": 24,
         "x": 0,
-        "y": 64
+        "y": 67
       },
       "id": 25,
       "panels": [],
@@ -2614,7 +2932,7 @@
         "h": 9,
         "w": 8,
         "x": 0,
-        "y": 65
+        "y": 68
       },
       "id": 26,
       "options": {
@@ -2716,7 +3034,7 @@
         "h": 9,
         "w": 8,
         "x": 8,
-        "y": 65
+        "y": 68
       },
       "id": 27,
       "options": {
@@ -2818,7 +3136,7 @@
         "h": 9,
         "w": 8,
         "x": 16,
-        "y": 65
+        "y": 68
       },
       "id": 28,
       "options": {
@@ -2920,7 +3238,7 @@
         "h": 9,
         "w": 8,
         "x": 0,
-        "y": 74
+        "y": 77
       },
       "id": 29,
       "options": {
@@ -2983,7 +3301,7 @@
         "h": 9,
         "w": 8,
         "x": 8,
-        "y": 74
+        "y": 77
       },
       "hiddenSeries": false,
       "id": 30,
@@ -3112,6 +3430,111 @@
         "align": false,
         "alignLevel": null
       }
+    },
+    {
+      "datasource": "Health Kit",
+      "description": "",
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "fixed"
+          },
+          "custom": {
+            "fillOpacity": 70,
+            "lineWidth": 1
+          },
+          "mappings": [
+            {
+              "options": {
+                "0": {
+                  "color": "dark-red",
+                  "index": 1,
+                  "text": "Didn't Stand"
+                },
+                "1": {
+                  "color": "dark-green",
+                  "index": 2,
+                  "text": "Stood"
+                },
+                "-1": {
+                  "color": "dark-purple",
+                  "index": 0,
+                  "text": "No Data"
+                }
+              },
+              "type": "value"
+            }
+          ],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              },
+              {
+                "color": "red",
+                "value": 80
+              }
+            ]
+          },
+          "unit": "none"
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 9,
+        "w": 12,
+        "x": 0,
+        "y": 86
+      },
+      "id": 43,
+      "options": {
+        "colWidth": 0.9,
+        "legend": {
+          "displayMode": "list",
+          "placement": "bottom"
+        },
+        "rowHeight": 0.9,
+        "showValue": "never",
+        "tooltip": {
+          "mode": "single"
+        }
+      },
+      "pluginVersion": "8.0.5",
+      "targets": [
+        {
+          "format": "time_series",
+          "group": [],
+          "metricColumn": "none",
+          "queryType": "randomWalk",
+          "rawQuery": true,
+          "rawSql": "select\n  $__timeGroupAlias(start_date, '1h', -1),\n  CASE\n    WHEN hk_value = 'HKCategoryValueAppleStandHourStood' THEN 1\n    WHEN hk_value = 'HKCategoryValueAppleStandHourIdle' THEN 0\n  END as \"Standing Status\"\nfrom hk_category_record \nwhere \n  $__timeFilter(start_date)\nAND\n  hk_type = 'HKCategoryTypeIdentifierAppleStandHour'\nORDER BY time",
+          "refId": "A",
+          "select": [
+            [
+              {
+                "params": [
+                  "hk_value"
+                ],
+                "type": "column"
+              }
+            ]
+          ],
+          "table": "hk_quantity_record",
+          "timeColumn": "creation_date",
+          "timeColumnType": "timestamp",
+          "where": [
+            {
+              "name": "$__timeFilter",
+              "params": [],
+              "type": "macro"
+            }
+          ]
+        }
+      ],
+      "title": "When did I stand?",
+      "type": "status-history"
     }
   ],
   "refresh": false,
@@ -3147,12 +3570,12 @@
     ]
   },
   "time": {
-    "from": "now-7d",
+    "from": "now-14d",
     "to": "now"
   },
   "timepicker": {},
   "timezone": "",
   "title": "Health Kit",
   "uid": "RPw0roWnz",
-  "version": 17
+  "version": 28
 }
