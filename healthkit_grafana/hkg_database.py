@@ -139,31 +139,6 @@ class HKGDatabase(object):
 
         return result[0]
 
-    # def insert_health_record(self, health_record):
-    #     upsert_sql = "INSERT INTO public.hk_record( " \
-    #                  "hk_type, " \
-    #                  "hk_source, " \
-    #                  "source_version, " \
-    #                  "device, " \
-    #                  "creation_date, " \
-    #                  "start_date, " \
-    #                  "end_date, " \
-    #                  "unit, " \
-    #                  "hk_value) " \
-    #                  "VALUES %s " \
-    #                  "ON CONFLICT ON CONSTRAINT" \
-    #                  "   hk_record_pkey " \
-    #                  "DO UPDATE " \
-    #                  "SET (hk_type, hk_source, source_version, device, " \
-    #                  "creation_date, start_date, end_date, " \
-    #                  "unit, hk_value) = " \
-    #                  "(EXCLUDED.hk_type, EXCLUDED.hk_source, " \
-    #                  "EXCLUDED.source_version, " \
-    #                  "EXCLUDED.device, EXCLUDED.creation_date, " \
-    #                  "EXCLUDED.start_date, EXCLUDED.end_date, " \
-    #                  "EXCLUDED.unit, EXCLUDED.hk_value);"
-    #     return self.insert_values([health_record], upsert_sql)
-
     def insert_quantity_records(self, health_records):
         upsert_sql = "INSERT INTO public.hk_quantity_record(" \
                      "person_id, " \
@@ -211,3 +186,49 @@ class HKGDatabase(object):
                      "EXCLUDED.unit, EXCLUDED.hk_value);"
 
         return self.insert_values(health_records, upsert_sql)
+
+    def insert_clinical_records(self, clinical_records):
+        upsert_sql = "INSERT INTO public.hk_clinical_record(" \
+                     "  id," \
+                     "  subject," \
+                     "  effective_time," \
+                     "  issued_time," \
+                     "  hk_type," \
+                     "  category, " \
+                     "  panel" \
+                     ") VALUES %s " \
+                     "ON CONFLICT ON CONSTRAINT" \
+                     "  hk_clinical_record_pkey " \
+                     "DO UPDATE " \
+                     "SET (subject, effective_time," \
+                     "issued_time, hk_type, category, panel) = " \
+                     "(EXCLUDED.subject, EXCLUDED.effective_time, " \
+                     "EXCLUDED.issued_time, EXCLUDED.hk_type, " \
+                     "EXCLUDED.category, EXCLUDED.panel);"
+
+        return self.insert_values(clinical_records, upsert_sql)
+
+    def insert_clinical_observations(self, clinical_observations):
+        upsert_sql = "INSERT INTO public.hk_clinical_observation(" \
+                     "  record_id," \
+                     "  observation_id," \
+                     "  observation_date," \
+                     "  code_display," \
+                     "  interpretation," \
+                     "  ref_range_high, " \
+                     "  ref_range_low, " \
+                     "  unit, " \
+                     "  value" \
+                     ") VALUES %s " \
+                     "ON CONFLICT ON CONSTRAINT" \
+                     "  hk_clinical_observation_pkey " \
+                     "DO UPDATE " \
+                     "SET (observation_date, code_display," \
+                     "interpretation, ref_range_high, ref_range_low, " \
+                     "unit, value) = " \
+                     "(EXCLUDED.observation_date, EXCLUDED.code_display, " \
+                     "EXCLUDED.interpretation, EXCLUDED.ref_range_high, " \
+                     "EXCLUDED.ref_range_low, EXCLUDED.unit, " \
+                     "EXCLUDED.value);"
+
+        return self.insert_values(clinical_observations, upsert_sql)

@@ -37,6 +37,6 @@ services:
     restart: "no"
 #    command: ["/bin/ls", "-al", "/opt/healthkit_grafana"]
     volumes:
-      - "./apple_health_export/export.xml:/opt/healthkit_grafana/apple_health_export/export.xml"
+      - "./apple_health_export:/opt/healthkit_grafana/apple_health_export:ro"
     depends_on:
       - graphs

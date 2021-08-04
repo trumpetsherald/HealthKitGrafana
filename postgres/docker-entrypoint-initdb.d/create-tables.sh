@@ -80,4 +80,48 @@ psql -v ON_ERROR_STOP=1 --username "$POSTGRES_USER" --dbname "$POSTGRES_DB" <<-E
 
     ALTER TABLE public.hk_category_record
         OWNER to $POSTGRES_USER;
+
+    CREATE TABLE IF NOT EXISTS public.hk_clinical_record
+    (
+        id text COLLATE pg_catalog."default" NOT NULL,
+        subject text COLLATE pg_catalog."default" NOT NULL,
+        effective_time timestamp with time zone NOT NULL,
+        issued_time timestamp with time zone,
+        hk_type text COLLATE pg_catalog."default",
+        category text COLLATE pg_catalog."default",
+        panel text COLLATE pg_catalog."default",
+        CONSTRAINT hk_clinical_record_pkey PRIMARY KEY (id)
+    )
+    WITH (
+        OIDS = FALSE
+    )
+    TABLESPACE pg_default;
+
+    ALTER TABLE public.hk_clinical_record
+        OWNER to $POSTGRES_USER;
+
+    CREATE TABLE IF NOT EXISTS public.hk_clinical_observation
+    (
+        record_id text COLLATE pg_catalog."default" NOT NULL,
+        observation_id integer NOT NULL,
+        observation_date timestamp with time zone NOT NULL,
+        code_display text COLLATE pg_catalog."default",
+        interpretation text COLLATE pg_catalog."default",
+        ref_range_high double precision,
+        ref_range_low double precision,
+        unit text COLLATE pg_catalog."default",
+        value double precision NOT NULL,
+        CONSTRAINT hk_clinical_observation_pkey PRIMARY KEY (record_id, observation_id),
+        CONSTRAINT hk_clinical_observation_record_id_fkey FOREIGN KEY (record_id)
+            REFERENCES public.hk_clinical_record (id) MATCH SIMPLE
+            ON UPDATE NO ACTION
+            ON DELETE NO ACTION
+    )
+    WITH (
+        OIDS = FALSE
+    )
+    TABLESPACE pg_default;
+
+    ALTER TABLE public.hk_clinical_observation
+        OWNER to $POSTGRES_USER;
 EOSQL

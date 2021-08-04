@@ -1,4 +1,5 @@
 import datetime
+import json
 import os
 import sys
 from healthkit_grafana import hkg_logger
@@ -7,9 +8,9 @@ from xml.dom import minidom
 
 LOGGER: hkg_logger = hkg_logger.LOGGER
 DATABASE: hkg_database
-EXPORT_FILE_PATH = os.environ.get(
-            'HKG_EXPORT_FILE_PATH',
-            '/opt/healthkit_grafana/apple_health_export/export.xml')
+EXPORT_DIR_PATH = os.environ.get(
+    'HKG_EXPORT_FILE_PATH',
+    '/opt/healthkit_grafana/apple_health_export')
 
 DEFAULT_PERSON_ID = 1
 STRIP_PREFIXES = [
@@ -27,7 +28,7 @@ HKCategoryValueHeadphoneAudioExposureEventSevenDayLimit = \
 
 
 def connect_to_db():
-    global DATABASE, EXPORT_FILE_PATH
+    global DATABASE
     LOGGER.info("Connecting to Database.")
 
     db_host, db_name, db_username, db_password = None, None, None, None
@@ -52,11 +53,15 @@ def connect_to_db():
 
 
 def parse_file() -> []:
+    result = []
     LOGGER.info("Parsing export file.")
-    xml_doc = minidom.parse(EXPORT_FILE_PATH)
-    record_list = xml_doc.getElementsByTagName('Record')
+    file_path = EXPORT_DIR_PATH + "/export.xml"
 
-    return record_list
+    if os.path.isfile(file_path):
+        xml_doc = minidom.parse(file_path)
+        result = xml_doc.getElementsByTagName('Record')
+
+    return result
 
 
 def get_quantity_records(xml_records):
@@ -72,9 +77,9 @@ def get_quantity_records(xml_records):
                 value = 0.0
 
             key = str(DEFAULT_PERSON_ID) + record_type + \
-                record.getAttribute('sourceName') + \
-                record.getAttribute('startDate') + \
-                record.getAttribute('endDate')
+                  record.getAttribute('sourceName') + \
+                  record.getAttribute('startDate') + \
+                  record.getAttribute('endDate')
 
             quantity_record = (
                 DEFAULT_PERSON_ID,
@@ -121,9 +126,9 @@ def get_category_records(xml_records):
             # (and this may be valid) is to do nothing on conflict vs update
             # the other fields.
             key = str(DEFAULT_PERSON_ID) + record_type + \
-                record.getAttribute('sourceName') + \
-                record.getAttribute('startDate') + \
-                record.getAttribute('endDate')
+                  record.getAttribute('sourceName') + \
+                  record.getAttribute('startDate') + \
+                  record.getAttribute('endDate')
 
             category_record = (
                 DEFAULT_PERSON_ID,
@@ -150,33 +155,144 @@ def get_category_records(xml_records):
     return result
 
 
-def import_data():
-    global DATABASE
-    start = datetime.datetime.now()
-    LOGGER.info("Starting Health Kit Exporter.")
-    connect_to_db()
-    xml_records = parse_file()
-    split = datetime.datetime.now() - start
-    LOGGER.info("Reading file took %s seconds." % split)
+def get_observations_from_report(report):
+    result = []
+    record_id = report['id']
 
+    for observation in report['contained']:
+        if 'valueString' in observation:
+            continue
+
+        if 'valueQuantity' not in observation:
+            continue
+
+        observation_id = observation['id']
+        observation_date = observation['effectiveDateTime']
+        code_display = None
+        coding_list = observation.get('code', []).get('coding')
+
+        if coding_list:
+            code_display = coding_list[0].get('display')
+
+        interpretation = None
+        coding_list = observation.get('interpretation', []).get('coding')
+
+        if coding_list:
+            interpretation = coding_list[0].get('code')
+
+        reference_range = observation.get('referenceRange', None)
+        reference_high, reference_low = None, None
+
+        if reference_range:
+            reference_high = reference_range[0].get('high', {}).get('value')
+            reference_low = reference_range[0].get('low', {}).get('value')
+
+        unit = observation['valueQuantity'].get('unit')
+        value = observation['valueQuantity']['value']
+
+        result.append(
+            (record_id, observation_id, observation_date, code_display,
+             interpretation, reference_high, reference_low, unit, value)
+        )
+
+    return result
+
+
+#  This will return a clinical record tuple and a list of observation tuples
+def get_record_and_observations(report):
+    try:
+        report_id = report['id']
+        subject = report['subject']['reference']
+        effective_time = report['effectiveDateTime']
+    except KeyError as ke:
+        LOGGER.error("Couldn't get required fields for report.")
+
+    issue_time = report.get('issued', None)
+    hk_type = report.get('resourceType')
+    category = report.get('category', {}).get('coding', [])[0].get('code)')
+    panel = report.get('code', {}).get('text')
+    observations = get_observations_from_report(report)
+
+    return (report_id, subject, effective_time,
+            issue_time, hk_type, category, panel), observations
+
+
+def get_clinical_records_and_observations():
+    records = []
+    record_ids = []
+    dup_record_count = 0
+    all_observations = []
+    clinical_path = EXPORT_DIR_PATH + "/clinical-records/"
+
+    if os.path.isdir(clinical_path):
+        for clinical_file in os.listdir(clinical_path):
+            file_path = clinical_path + clinical_file
+            if os.path.isfile(file_path) and clinical_file.startswith(
+                    "DiagnosticReport"):
+                with open(file_path) as report_file:
+                    report = json.load(report_file)
+                    record, observations = get_record_and_observations(report)
+                    if record and observations:
+                        # Ugly hack to handle identical fhir json files
+                        # that have different filenames
+                        if record[0] not in record_ids:
+                            record_ids.append(record[0])
+                            records.append(record)
+                            all_observations.extend(observations)
+                        else:
+                            dup_record_count += 1
+                    else:
+                        LOGGER.error("Report or observations were null.")
+
+    return records, all_observations
+
+
+def import_export_xml():
+    start = datetime.datetime.now()
+    LOGGER.info("Importing export.xml")
+    xml_records = parse_file()
     quantity_records = get_quantity_records(xml_records)
     category_records = get_category_records(xml_records)
+    read_done = datetime.datetime.now()
+    LOGGER.info("Reading export.xml took %s seconds." % (read_done - start))
 
     LOGGER.info("Adding %s quantity records to the database." %
                 len(quantity_records))
     DATABASE.insert_quantity_records(quantity_records)
-    split = datetime.datetime.now() - split
-    LOGGER.info("Inserting quantity records took %s seconds." % split)
 
     LOGGER.info("Adding %s category records to the database." %
                 len(category_records))
     DATABASE.insert_category_records(category_records)
-    split = datetime.datetime.now() - split
-    LOGGER.info("Inserting category records took %s seconds." % split)
 
+    insert_done = datetime.datetime.now()
+    LOGGER.info("Inserting category records took %s seconds." %
+                (insert_done - read_done))
+    LOGGER.info("Total time to parse export.xml and update DB was %s" %
+                (insert_done - start))
+
+
+def import_clinical_records():
+    global DATABASE
+    start = datetime.datetime.now()
+    records, observations = get_clinical_records_and_observations()
+
+    DATABASE.insert_clinical_records(records)
+    DATABASE.insert_clinical_observations(observations)
     end = datetime.datetime.now() - start
+    LOGGER.info("Adding Clinical Records (labs) took %s second." % end)
 
-    LOGGER.info("Exiting, everything took %s seconds." % end)
+
+def import_data():
+    global DATABASE
+    start = datetime.datetime.now()
+    LOGGER.info("Starting Health Kit Exporter.")
+
+    connect_to_db()
+    import_export_xml()
+    import_clinical_records()
+
+    end = datetime.datetime.now()
+    LOGGER.info("Exiting, everything took %s seconds." % (end - start))
 
 
 if __name__ == "__main__":

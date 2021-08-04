@@ -3,7 +3,8 @@
 **/*.env
 **/.idea/*
 **/venv/*
-**/export.xml
+**/apple_health_export/export.xml
+**/apple_health_export/clinical-records/*.json
 **/*.log
 **/grafana/paths_data/*
 **/postgres/pg_data/*

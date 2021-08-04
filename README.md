@@ -24,14 +24,35 @@ and place the export.xml file into the apple_health_export directory of this rep
 6. That's it! You should be able to browse your health data graphs.
 
 ## Screenshots
+This summary will probably become it's own dashboard as it expands
 ![overview](./docs/overview.png)
+
+I'm not happy with this but it's good enough till inspiration hits
 ![activity](./docs/activity.png)
+
+This definitely needs to be its own dash due to the frequency of the data.
 ![vitals](./docs/vitals.png)
+
+Kinda lame with only weight, not sure where this will end up
 ![body_measurements](./docs/body_measurements.png)
 
+And finally the true inspiration for all of this work, to be able to track my labs
+over time and see how various metrics interact (e.g. HDL vs LDL).
+
+As you can see my numbers are a big motivator to do better.
+![labs](./docs/labs.png)
+
+And 
 ## Known Issues
 * The queries are hard coded to US/MDT timezone. I think in the code I'll 
 want to convert timestamps to UTC before insertion in the DB.
+* Currently I've only test labs against the files pulled from LabCorp. I 
+have low expectations of it working for other providers considering I 
+hard coded it to look only at files that start with "DiagnosticReport"
+* The Labs implementation needs a lot of error checking, currently
+what's committed is the first pass that worked with my data.
+* It appears I'm getting a lot of duplicate lab files in the HealthKit
+export, need to figure out what that's all about.
 
 ## What's Next
 Things I plan to change very soon.
@@ -40,11 +61,16 @@ Things I plan to change very soon.
   * This means linking hk_person's to hk_records
   * Also means writing code to handle export_cda.xml
 * Import Workout elements
-* Import Lab Results
+* ~~Import Lab Results~~
+* Clean up lab import code
 * More dashboards
+* Consider if using pydantic would save time/code
 
 ## Helpful Links
 
-These two were ridiculously helpful:
+These two were ridiculously helpful for understanding HealthKit:
 https://developer.apple.com/documentation/healthkit/hkquantitytypeidentifier
 https://developer.apple.com/documentation/healthkit/hkcategorytypeidentifier
+
+This is good for understanding the clinical records (labs) json format
+https://github.com/smart-on-fhir/client-py
