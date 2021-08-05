@@ -52,16 +52,24 @@ def connect_to_db():
         exit(42)
 
 
-def parse_file() -> []:
-    result = []
+def parse_export_xml() -> []:
+    me = None
+    records = None
+    workouts = None
+    activity_summaries = None
+    clinical_records = None
     LOGGER.info("Parsing export file.")
     file_path = EXPORT_DIR_PATH + "/export.xml"
 
     if os.path.isfile(file_path):
         xml_doc = minidom.parse(file_path)
-        result = xml_doc.getElementsByTagName('Record')
+        me = xml_doc.getElementsByTagName('Me')
+        records = xml_doc.getElementsByTagName('Record')
+        workouts = xml_doc.getElementsByTagName('Workout')
+        activity_summaries = xml_doc.getElementsByTagName('ActivitySummary')
+        clinical_records = xml_doc.getElementsByTagName('ClinicalRecord')
 
-    return result
+    return me, records, workouts, activity_summaries, clinical_records
 
 
 def get_quantity_records(xml_records):
@@ -221,12 +229,14 @@ def get_clinical_records_and_observations():
     records = []
     record_ids = []
     dup_record_count = 0
+    dup_records = {}
     all_observations = []
     clinical_path = EXPORT_DIR_PATH + "/clinical-records/"
 
     if os.path.isdir(clinical_path):
         for clinical_file in os.listdir(clinical_path):
             file_path = clinical_path + clinical_file
+            # todo gag a maggot fix this
             if os.path.isfile(file_path) and clinical_file.startswith(
                     "DiagnosticReport"):
                 with open(file_path) as report_file:
@@ -240,19 +250,30 @@ def get_clinical_records_and_observations():
                             records.append(record)
                             all_observations.extend(observations)
                         else:
+                            if record[0] not in dup_records:
+                                dup_records[record[0]] = []
+                            dup_records[record[0]].append(clinical_file)
                             dup_record_count += 1
                     else:
                         LOGGER.error("Report or observations were null.")
 
+    for dupe, files in dup_records.items():
+        print('ID is duplicated in the following files:')
+        for file in files:
+            print("\t" + file)
+
     return records, all_observations
 
 
-def import_export_xml():
+def import_me(me_xml):
+    pass
+
+
+def import_records(records_xml):
     start = datetime.datetime.now()
     LOGGER.info("Importing export.xml")
-    xml_records = parse_file()
-    quantity_records = get_quantity_records(xml_records)
-    category_records = get_category_records(xml_records)
+    quantity_records = get_quantity_records(records_xml)
+    category_records = get_category_records(records_xml)
     read_done = datetime.datetime.now()
     LOGGER.info("Reading export.xml took %s seconds." % (read_done - start))
 
@@ -269,6 +290,14 @@ def import_export_xml():
                 (insert_done - read_done))
     LOGGER.info("Total time to parse export.xml and update DB was %s" %
                 (insert_done - start))
+
+
+def import_workouts(workouts_xml):
+    pass
+
+
+def import_activity_summaries(summaries_xml):
+    pass
 
 
 def import_clinical_records():
@@ -288,7 +317,11 @@ def import_data():
     LOGGER.info("Starting Health Kit Exporter.")
 
     connect_to_db()
-    import_export_xml()
+    me, records, workouts, activity_summaries, \
+        clinical_records = parse_export_xml()
+
+    import_me(me)
+    import_records(records)
     import_clinical_records()
 
     end = datetime.datetime.now()
