@@ -322,6 +322,8 @@ def import_data():
 
     import_me(me)
     import_records(records)
+    import_workouts(workouts)
+    import_activity_summaries(activity_summaries)
     import_clinical_records()
 
     end = datetime.datetime.now()
