@@ -1,7 +1,7 @@
 import datetime
 import json
 import os
-import sys
+import pathlib
 from healthkit_grafana import hkg_logger
 from healthkit_grafana import hkg_database
 from xml.dom import minidom
@@ -85,9 +85,9 @@ def get_quantity_records(xml_records):
                 value = 0.0
 
             key = str(DEFAULT_PERSON_ID) + record_type + \
-                  record.getAttribute('sourceName') + \
-                  record.getAttribute('startDate') + \
-                  record.getAttribute('endDate')
+                record.getAttribute('sourceName') + \
+                record.getAttribute('startDate') + \
+                record.getAttribute('endDate')
 
             quantity_record = (
                 DEFAULT_PERSON_ID,
@@ -134,9 +134,9 @@ def get_category_records(xml_records):
             # (and this may be valid) is to do nothing on conflict vs update
             # the other fields.
             key = str(DEFAULT_PERSON_ID) + record_type + \
-                  record.getAttribute('sourceName') + \
-                  record.getAttribute('startDate') + \
-                  record.getAttribute('endDate')
+                record.getAttribute('sourceName') + \
+                record.getAttribute('startDate') + \
+                record.getAttribute('endDate')
 
             category_record = (
                 DEFAULT_PERSON_ID,
@@ -213,7 +213,8 @@ def get_record_and_observations(report):
         subject = report['subject']['reference']
         effective_time = report['effectiveDateTime']
     except KeyError as ke:
-        LOGGER.error("Couldn't get required fields for report.")
+        LOGGER.error("Couldn't get required fields for report.", ke)
+        return None, None
 
     issue_time = report.get('issued', None)
     hk_type = report.get('resourceType')
@@ -266,7 +267,7 @@ def get_clinical_records_and_observations():
 
 
 def import_me(me_xml):
-    pass
+    LOGGER.debug(me_xml)
 
 
 def import_records(records_xml):
@@ -293,16 +294,52 @@ def import_records(records_xml):
 
 
 def import_workouts(workouts_xml):
-    pass
+    LOGGER.debug(workouts_xml)
 
 
 def import_activity_summaries(summaries_xml):
-    pass
+    LOGGER.debug(summaries_xml)
 
 
-def import_clinical_records():
+def remove_duplicate_clinical_records(clinical_records_xml):
+    id_record_map = {}
+    duplicates = []
+
+    for cr in clinical_records_xml:
+        # This should never be null
+        identifier = cr.getAttribute('identifier')
+
+        if identifier not in id_record_map:
+            id_record_map[identifier] = cr
+        else:
+            duplicates.append(cr)
+
+    clinical_path = EXPORT_DIR_PATH + "/clinical-records/"
+
+    if os.path.isdir(clinical_path):
+        duplicate_path = os.path.join(clinical_path, 'duplicates')
+
+        pathlib.Path(duplicate_path).mkdir(exist_ok=True)
+
+        for dup in duplicates:
+            file_path = dup.getAttribute('resourceFilePath')
+
+            current_path = os.path.join(
+                clinical_path, os.path.basename(file_path))
+            new_path = os.path.join(
+                duplicate_path, os.path.basename(file_path))
+            os.rename(current_path, new_path)
+
+    LOGGER.info("Moved %s files to the duplicates directory.") \
+        % len(duplicates)
+
+    return id_record_map.values()
+
+
+def import_clinical_records(clinical_records_xml):
     global DATABASE
     start = datetime.datetime.now()
+    LOGGER.debug(clinical_records_xml)
     records, observations = get_clinical_records_and_observations()
 
     DATABASE.insert_clinical_records(records)
@@ -320,11 +357,12 @@ def import_data():
     me, records, workouts, activity_summaries, \
         clinical_records = parse_export_xml()
 
-    import_me(me)
-    import_records(records)
-    import_workouts(workouts)
-    import_activity_summaries(activity_summaries)
-    import_clinical_records()
+    # import_me(me)
+    # import_records(records)
+    # import_workouts(workouts)
+    # import_activity_summaries(activity_summaries)
+    unique_records = remove_duplicate_clinical_records(clinical_records)
+    import_clinical_records(unique_records)
 
     end = datetime.datetime.now()
     LOGGER.info("Exiting, everything took %s seconds." % (end - start))
