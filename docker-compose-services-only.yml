@@ -25,17 +25,3 @@ services:
       - "3000:3000"
     depends_on:
       - database
-  exporter:
-    environment:
-      HKG_DB_HOST: database
-      HKG_DB_NAME: health_kit_grafana
-      HKG_DB_USERNAME: caduceus
-      HKG_DB_PASSWORD: Mariner-10
-    build:
-      context: .
-      dockerfile: Dockerfile
-    restart: "no"
-    volumes:
-      - "./apple_health_export:/opt/healthkit_grafana/apple_health_export"
-    depends_on:
-      - graphs

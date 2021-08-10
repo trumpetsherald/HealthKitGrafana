@@ -18,6 +18,9 @@ STRIP_PREFIXES = [
     'HKCategoryTypeIdentifier'
 ]
 
+LAB_TYPE_DIAGNOSTIC_REPORT = 'DiagnosticReport'
+LAB_SOURCE_LABCORP = 'labcorp'
+
 HKCategoryValueSleepAnalysisInBed = "HKCategoryValueSleepAnalysisInBed"
 HKCategoryValueSleepAnalysisAsleep = "HKCategoryValueSleepAnalysisAsleep"
 HKCategoryValueSleepAnalysisAwake = "HKCategoryValueSleepAnalysisAwake"
@@ -64,10 +67,25 @@ def parse_export_xml() -> []:
     if os.path.isfile(file_path):
         xml_doc = minidom.parse(file_path)
         me = xml_doc.getElementsByTagName('Me')
+        if me:
+            LOGGER.info("Me element found.")
+
         records = xml_doc.getElementsByTagName('Record')
+        if records:
+            LOGGER.info("%s records found." % len(records))
+
         workouts = xml_doc.getElementsByTagName('Workout')
+        if workouts:
+            LOGGER.info("%s workouts found." % len(workouts))
+
         activity_summaries = xml_doc.getElementsByTagName('ActivitySummary')
+        if activity_summaries:
+            LOGGER.info(
+                "%s activity_summaries found." % len(activity_summaries))
+
         clinical_records = xml_doc.getElementsByTagName('ClinicalRecord')
+        if records:
+            LOGGER.info("%s clinical_records found." % len(clinical_records))
 
     return me, records, workouts, activity_summaries, clinical_records
 
@@ -169,9 +187,14 @@ def get_observations_from_report(report):
 
     for observation in report['contained']:
         if 'valueString' in observation:
+            LOGGER.error(
+                "Observation value is a string, skipping: %s" % observation)
             continue
 
         if 'valueQuantity' not in observation:
+            LOGGER.error(
+                "Observation is missing a quantity, skipping: %s" % observation
+            )
             continue
 
         observation_id = observation['id']
@@ -207,7 +230,7 @@ def get_observations_from_report(report):
 
 
 #  This will return a clinical record tuple and a list of observation tuples
-def get_record_and_observations(report):
+def get_record_and_observations(report, hk_type, source_name, resource_path):
     try:
         report_id = report['id']
         subject = report['subject']['reference']
@@ -217,51 +240,55 @@ def get_record_and_observations(report):
         return None, None
 
     issue_time = report.get('issued', None)
-    hk_type = report.get('resourceType')
-    category = report.get('category', {}).get('coding', [])[0].get('code)')
+    category = report.get('category', {}).get('coding', [])[0].get('code')
     panel = report.get('code', {}).get('text')
     observations = get_observations_from_report(report)
 
-    return (report_id, subject, effective_time,
-            issue_time, hk_type, category, panel), observations
+    return (report_id, subject, effective_time, issue_time, hk_type,
+            source_name, resource_path, category, panel), observations
 
 
-def get_clinical_records_and_observations():
+def get_clinical_records_and_observations(clinical_records_xml):
     records = []
-    record_ids = []
-    dup_record_count = 0
-    dup_records = {}
     all_observations = []
-    clinical_path = EXPORT_DIR_PATH + "/clinical-records/"
 
-    if os.path.isdir(clinical_path):
-        for clinical_file in os.listdir(clinical_path):
-            file_path = clinical_path + clinical_file
-            # todo gag a maggot fix this
-            if os.path.isfile(file_path) and clinical_file.startswith(
-                    "DiagnosticReport"):
-                with open(file_path) as report_file:
-                    report = json.load(report_file)
-                    record, observations = get_record_and_observations(report)
-                    if record and observations:
-                        # Ugly hack to handle identical fhir json files
-                        # that have different filenames
-                        if record[0] not in record_ids:
-                            record_ids.append(record[0])
-                            records.append(record)
-                            all_observations.extend(observations)
-                        else:
-                            if record[0] not in dup_records:
-                                dup_records[record[0]] = []
-                            dup_records[record[0]].append(clinical_file)
-                            dup_record_count += 1
-                    else:
-                        LOGGER.error("Report or observations were null.")
+    for cr in clinical_records_xml:
+        record_id = cr.getAttribute('identifier')
+        hk_type = cr.getAttribute('type')
+        source_name = cr.getAttribute('sourceName')
+        resource_path = cr.getAttribute('resourceFilePath')
 
-    for dupe, files in dup_records.items():
-        print('ID is duplicated in the following files:')
-        for file in files:
-            print("\t" + file)
+        if not all([record_id, hk_type, source_name, resource_path]):
+            LOGGER.error("Required field missing, skipping record %s" % cr)
+            continue
+
+        if hk_type != LAB_TYPE_DIAGNOSTIC_REPORT:
+            LOGGER.warning("Currently only Diagnostic Reports are supported. "
+                           "Skipping record: %s" % cr)
+            continue
+
+        if source_name != LAB_SOURCE_LABCORP:
+            LOGGER.warn("I haven't tested against anything but "
+                        "LabCorp so currently I'm playing it "
+                        "safe and skipping record: %s" % cr)
+
+        file_path = EXPORT_DIR_PATH + resource_path
+        if not os.path.isfile(file_path):
+            LOGGER.error("Skipping clinical record: %s.\n"
+                         "I couldn't find the file resource at the "
+                         "indicated path %s. Please ensure this path "
+                         "is correct." % (cr, file_path))
+            continue
+
+        with open(file_path) as report_file:
+            report = json.load(report_file)
+            record, observations = get_record_and_observations(
+                report, hk_type, source_name, resource_path)
+            if record and observations:
+                records.append(record)
+                all_observations.extend(observations)
+            else:
+                LOGGER.error("Report or observations were null.")
 
     return records, all_observations
 
@@ -304,6 +331,8 @@ def import_activity_summaries(summaries_xml):
 def remove_duplicate_clinical_records(clinical_records_xml):
     id_record_map = {}
     duplicates = []
+    skipped = 0
+    files_not_found = 0
 
     for cr in clinical_records_xml:
         # This should never be null
@@ -328,10 +357,25 @@ def remove_duplicate_clinical_records(clinical_records_xml):
                 clinical_path, os.path.basename(file_path))
             new_path = os.path.join(
                 duplicate_path, os.path.basename(file_path))
+
+            if not os.path.isfile(current_path):
+                skipped += 1
+                if os.path.isfile(new_path):
+                    LOGGER.debug(
+                        "%s was already moved into duplicates." % new_path)
+                else:
+                    LOGGER.error("No file found at %s to move to "
+                                 "duplicates." % current_path)
+                    files_not_found += 1
+                continue
+
             os.rename(current_path, new_path)
 
-    LOGGER.info("Moved %s files to the duplicates directory.") \
-        % len(duplicates)
+    LOGGER.info("Duplicate Clinical Records Detected: %s" % len(duplicates))
+    LOGGER.info("Duplicate Clinical Records Moved: %s" % (
+            len(duplicates) - skipped))
+    LOGGER.info("Duplicate Clinical Records Skipped: %s" % skipped)
+    LOGGER.info("Clinical Records Missing Files: %s" % files_not_found)
 
     return id_record_map.values()
 
@@ -340,7 +384,8 @@ def import_clinical_records(clinical_records_xml):
     global DATABASE
     start = datetime.datetime.now()
     LOGGER.debug(clinical_records_xml)
-    records, observations = get_clinical_records_and_observations()
+    records, observations = \
+        get_clinical_records_and_observations(clinical_records_xml)
 
     DATABASE.insert_clinical_records(records)
     DATABASE.insert_clinical_observations(observations)
@@ -357,10 +402,10 @@ def import_data():
     me, records, workouts, activity_summaries, \
         clinical_records = parse_export_xml()
 
-    # import_me(me)
-    # import_records(records)
-    # import_workouts(workouts)
-    # import_activity_summaries(activity_summaries)
+    import_me(me)
+    import_records(records)
+    import_workouts(workouts)
+    import_activity_summaries(activity_summaries)
     unique_records = remove_duplicate_clinical_records(clinical_records)
     import_clinical_records(unique_records)
 

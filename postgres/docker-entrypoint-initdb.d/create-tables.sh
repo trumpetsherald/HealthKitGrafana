@@ -88,6 +88,8 @@ psql -v ON_ERROR_STOP=1 --username "$POSTGRES_USER" --dbname "$POSTGRES_DB" <<-E
         effective_time timestamp with time zone NOT NULL,
         issued_time timestamp with time zone,
         hk_type text COLLATE pg_catalog."default",
+        source_name text COLLATE pg_catalog."default",
+        resource_path text COLLATE pg_catalog."default",
         category text COLLATE pg_catalog."default",
         panel text COLLATE pg_catalog."default",
         CONSTRAINT hk_clinical_record_pkey PRIMARY KEY (id)

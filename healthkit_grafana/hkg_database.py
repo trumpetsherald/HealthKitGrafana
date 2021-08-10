@@ -194,6 +194,8 @@ class HKGDatabase(object):
                      "  effective_time," \
                      "  issued_time," \
                      "  hk_type," \
+                     "  source_name," \
+                     "  resource_path," \
                      "  category, " \
                      "  panel" \
                      ") VALUES %s " \
@@ -201,9 +203,11 @@ class HKGDatabase(object):
                      "  hk_clinical_record_pkey " \
                      "DO UPDATE " \
                      "SET (subject, effective_time," \
-                     "issued_time, hk_type, category, panel) = " \
+                     "issued_time, hk_type, source_name, " \
+                     "resource_path, category, panel) = " \
                      "(EXCLUDED.subject, EXCLUDED.effective_time, " \
                      "EXCLUDED.issued_time, EXCLUDED.hk_type, " \
+                     "EXCLUDED.source_name, EXCLUDED.resource_path, " \
                      "EXCLUDED.category, EXCLUDED.panel);"
 
         return self.insert_values(clinical_records, upsert_sql)
