@@ -8,6 +8,12 @@
         "hide": true,
         "iconColor": "rgba(0, 211, 255, 1)",
         "name": "Annotations & Alerts",
+        "target": {
+          "limit": 100,
+          "matchAny": false,
+          "tags": [],
+          "type": "dashboard"
+        },
         "type": "dashboard"
       }
     ]
@@ -15,15 +21,19 @@
   "editable": true,
   "gnetId": null,
   "graphTooltip": 0,
-  "id": 2,
+  "id": 3,
+  "iteration": 1628727181089,
   "links": [],
   "panels": [
     {
       "datasource": "Health Kit",
+      "description": "",
       "fieldConfig": {
         "defaults": {
           "color": {
-            "mode": "palette-classic"
+            "fixedColor": "blue",
+            "mode": "fixed",
+            "seriesBy": "last"
           },
           "custom": {
             "axisLabel": "",
@@ -37,7 +47,7 @@
               "tooltip": false,
               "viz": false
             },
-            "lineInterpolation": "linear",
+            "lineInterpolation": "smooth",
             "lineWidth": 1,
             "pointSize": 5,
             "scaleDistribution": {
@@ -62,21 +72,69 @@
                 "value": null
               },
               {
-                "color": "red",
-                "value": 80
+                "color": "#EAB839",
+                "value": 0
+              },
+              {
+                "color": "#6ED0E0",
+                "value": 10
+              },
+              {
+                "color": "#EF843C",
+                "value": 20
               }
             ]
           }
         },
-        "overrides": []
+        "overrides": [
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "Referenece Range High"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "fixedColor": "dark-red",
+                  "mode": "fixed"
+                }
+              },
+              {
+                "id": "custom.showPoints",
+                "value": "never"
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "Referenece Range Low"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "fixedColor": "dark-yellow",
+                  "mode": "fixed"
+                }
+              },
+              {
+                "id": "custom.showPoints",
+                "value": "never"
+              }
+            ]
+          }
+        ]
       },
       "gridPos": {
-        "h": 8,
+        "h": 9,
         "w": 8,
         "x": 0,
         "y": 0
       },
       "id": 2,
+      "maxPerRow": 3,
       "options": {
         "legend": {
           "calcs": [],
@@ -87,6 +145,8 @@
           "mode": "single"
         }
       },
+      "repeat": "code_display",
+      "repeatDirection": "h",
       "targets": [
         {
           "format": "time_series",
@@ -94,8 +154,38 @@
           "metricColumn": "none",
           "queryType": "randomWalk",
           "rawQuery": true,
-          "rawSql": "SELECT\n  observation_date AS \"time\",\n  value as \"Triglycerides\",\n  ref_range_high as \"Reference Range High\",\n  ref_range_low as \"Reference Range Low\"\nFROM hk_clinical_observation\nWHERE\n  $__timeFilter(observation_date)\nAND\n  code_display = 'Triglycerides'\nORDER BY 1",
+          "rawSql": "SELECT\n  o.observation_date AS \"time\",\n  o.value as \"$code_display\",\n  ref_range_high as \"Referenece Range High\",\n  ref_range_low as \"Referenece Range Low\"\nFROM hk_clinical_record r, hk_clinical_observation o\nWHERE\n  $__timeFilter(o.observation_date)\nAND\n  r.id = o.record_id\n-- AND\n--   r.panel in ($panel)\nAND\n  code_display = $code_display\nORDER BY 1",
           "refId": "A",
+          "select": [
+            [
+              {
+                "params": [
+                  "ref_range_high"
+                ],
+                "type": "column"
+              }
+            ]
+          ],
+          "table": "hk_clinical_observation",
+          "timeColumn": "observation_date",
+          "timeColumnType": "timestamp",
+          "where": [
+            {
+              "name": "$__timeFilter",
+              "params": [],
+              "type": "macro"
+            }
+          ]
+        },
+        {
+          "format": "table",
+          "group": [],
+          "hide": false,
+          "metricColumn": "none",
+          "queryType": "randomWalk",
+          "rawQuery": true,
+          "rawSql": "SELECT\n  unit\nFROM hk_clinical_observation\nWHERE\n  $__timeFilter(observation_date)\nAND\n  code_display = $code_display\nORDER BY 1\nLIMIT 1",
+          "refId": "B",
           "select": [
             [
               {
@@ -118,530 +208,87 @@
           ]
         }
       ],
-      "title": "Triglycerides",
-      "type": "timeseries"
-    },
-    {
-      "datasource": "Health Kit",
-      "fieldConfig": {
-        "defaults": {
-          "color": {
-            "mode": "palette-classic"
-          },
-          "custom": {
-            "axisLabel": "",
-            "axisPlacement": "auto",
-            "barAlignment": 0,
-            "drawStyle": "line",
-            "fillOpacity": 0,
-            "gradientMode": "none",
-            "hideFrom": {
-              "legend": false,
-              "tooltip": false,
-              "viz": false
-            },
-            "lineInterpolation": "linear",
-            "lineWidth": 1,
-            "pointSize": 5,
-            "scaleDistribution": {
-              "type": "linear"
-            },
-            "showPoints": "auto",
-            "spanNulls": false,
-            "stacking": {
-              "group": "A",
-              "mode": "none"
-            },
-            "thresholdsStyle": {
-              "mode": "off"
-            }
-          },
-          "mappings": [],
-          "thresholds": {
-            "mode": "absolute",
-            "steps": [
+      "title": "$code_display",
+      "transformations": [
+        {
+          "id": "configFromData",
+          "options": {
+            "configRefId": "B",
+            "mappings": [
               {
-                "color": "green",
-                "value": null
-              },
-              {
-                "color": "red",
-                "value": 80
+                "fieldName": "unit",
+                "handlerKey": "unit"
               }
             ]
           }
-        },
-        "overrides": []
-      },
-      "gridPos": {
-        "h": 8,
-        "w": 8,
-        "x": 8,
-        "y": 0
-      },
-      "id": 3,
-      "options": {
-        "legend": {
-          "calcs": [],
-          "displayMode": "list",
-          "placement": "bottom"
-        },
-        "tooltip": {
-          "mode": "single"
-        }
-      },
-      "targets": [
-        {
-          "format": "time_series",
-          "group": [],
-          "metricColumn": "none",
-          "queryType": "randomWalk",
-          "rawQuery": true,
-          "rawSql": "SELECT\n  observation_date AS \"time\",\n  value as \"Cholesterol, Total\",\n  ref_range_high as \"Reference Range High\",\n  ref_range_low as \"Reference Range Low\"\nFROM hk_clinical_observation\nWHERE\n  $__timeFilter(observation_date)\nAND\n  code_display = 'Cholesterol, Total'\nORDER BY 1",
-          "refId": "A",
-          "select": [
-            [
-              {
-                "params": [
-                  "ref_range_high"
-                ],
-                "type": "column"
-              }
-            ]
-          ],
-          "table": "hk_clinical_observation",
-          "timeColumn": "observation_date",
-          "timeColumnType": "timestamp",
-          "where": [
-            {
-              "name": "$__timeFilter",
-              "params": [],
-              "type": "macro"
-            }
-          ]
         }
       ],
-      "title": "Cholesterol, Total",
-      "type": "timeseries"
-    },
-    {
-      "datasource": "Health Kit",
-      "fieldConfig": {
-        "defaults": {
-          "color": {
-            "mode": "palette-classic"
-          },
-          "custom": {
-            "axisLabel": "",
-            "axisPlacement": "auto",
-            "barAlignment": 0,
-            "drawStyle": "line",
-            "fillOpacity": 0,
-            "gradientMode": "none",
-            "hideFrom": {
-              "legend": false,
-              "tooltip": false,
-              "viz": false
-            },
-            "lineInterpolation": "linear",
-            "lineWidth": 1,
-            "pointSize": 5,
-            "scaleDistribution": {
-              "type": "linear"
-            },
-            "showPoints": "auto",
-            "spanNulls": false,
-            "stacking": {
-              "group": "A",
-              "mode": "none"
-            },
-            "thresholdsStyle": {
-              "mode": "off"
-            }
-          },
-          "mappings": [],
-          "thresholds": {
-            "mode": "absolute",
-            "steps": [
-              {
-                "color": "green",
-                "value": null
-              },
-              {
-                "color": "red",
-                "value": 80
-              }
-            ]
-          }
-        },
-        "overrides": []
-      },
-      "gridPos": {
-        "h": 8,
-        "w": 8,
-        "x": 16,
-        "y": 0
-      },
-      "id": 4,
-      "options": {
-        "legend": {
-          "calcs": [],
-          "displayMode": "list",
-          "placement": "bottom"
-        },
-        "tooltip": {
-          "mode": "single"
-        }
-      },
-      "targets": [
-        {
-          "format": "time_series",
-          "group": [],
-          "metricColumn": "none",
-          "queryType": "randomWalk",
-          "rawQuery": true,
-          "rawSql": "SELECT\n  observation_date AS \"time\",\n  value as \"HDL Cholesterol\",\n  ref_range_high as \"Reference Range High\",\n  ref_range_low as \"Reference Range Low\"\nFROM hk_clinical_observation\nWHERE\n  $__timeFilter(observation_date)\nAND\n  code_display = 'HDL Cholesterol'\nORDER BY 1",
-          "refId": "A",
-          "select": [
-            [
-              {
-                "params": [
-                  "ref_range_high"
-                ],
-                "type": "column"
-              }
-            ]
-          ],
-          "table": "hk_clinical_observation",
-          "timeColumn": "observation_date",
-          "timeColumnType": "timestamp",
-          "where": [
-            {
-              "name": "$__timeFilter",
-              "params": [],
-              "type": "macro"
-            }
-          ]
-        }
-      ],
-      "title": "HDL Cholesterol",
-      "type": "timeseries"
-    },
-    {
-      "datasource": "Health Kit",
-      "fieldConfig": {
-        "defaults": {
-          "color": {
-            "mode": "palette-classic"
-          },
-          "custom": {
-            "axisLabel": "",
-            "axisPlacement": "auto",
-            "barAlignment": 0,
-            "drawStyle": "line",
-            "fillOpacity": 0,
-            "gradientMode": "none",
-            "hideFrom": {
-              "legend": false,
-              "tooltip": false,
-              "viz": false
-            },
-            "lineInterpolation": "linear",
-            "lineWidth": 1,
-            "pointSize": 5,
-            "scaleDistribution": {
-              "type": "linear"
-            },
-            "showPoints": "auto",
-            "spanNulls": false,
-            "stacking": {
-              "group": "A",
-              "mode": "none"
-            },
-            "thresholdsStyle": {
-              "mode": "off"
-            }
-          },
-          "mappings": [],
-          "thresholds": {
-            "mode": "absolute",
-            "steps": [
-              {
-                "color": "green",
-                "value": null
-              },
-              {
-                "color": "red",
-                "value": 80
-              }
-            ]
-          }
-        },
-        "overrides": []
-      },
-      "gridPos": {
-        "h": 8,
-        "w": 8,
-        "x": 0,
-        "y": 8
-      },
-      "id": 5,
-      "options": {
-        "legend": {
-          "calcs": [],
-          "displayMode": "list",
-          "placement": "bottom"
-        },
-        "tooltip": {
-          "mode": "single"
-        }
-      },
-      "targets": [
-        {
-          "format": "time_series",
-          "group": [],
-          "metricColumn": "none",
-          "queryType": "randomWalk",
-          "rawQuery": true,
-          "rawSql": "SELECT\n  observation_date AS \"time\",\n  value as \"LDL Cholesterol\",\n  ref_range_high as \"Reference Range High\",\n  ref_range_low as \"Reference Range Low\"\nFROM hk_clinical_observation\nWHERE\n  $__timeFilter(observation_date)\nAND\n  code_display = 'LDL Cholesterol Calc'\nORDER BY 1",
-          "refId": "A",
-          "select": [
-            [
-              {
-                "params": [
-                  "ref_range_high"
-                ],
-                "type": "column"
-              }
-            ]
-          ],
-          "table": "hk_clinical_observation",
-          "timeColumn": "observation_date",
-          "timeColumnType": "timestamp",
-          "where": [
-            {
-              "name": "$__timeFilter",
-              "params": [],
-              "type": "macro"
-            }
-          ]
-        }
-      ],
-      "title": "LDL Cholesterol",
-      "type": "timeseries"
-    },
-    {
-      "datasource": "Health Kit",
-      "fieldConfig": {
-        "defaults": {
-          "color": {
-            "mode": "palette-classic"
-          },
-          "custom": {
-            "axisLabel": "",
-            "axisPlacement": "auto",
-            "barAlignment": 0,
-            "drawStyle": "line",
-            "fillOpacity": 0,
-            "gradientMode": "none",
-            "hideFrom": {
-              "legend": false,
-              "tooltip": false,
-              "viz": false
-            },
-            "lineInterpolation": "linear",
-            "lineWidth": 1,
-            "pointSize": 5,
-            "scaleDistribution": {
-              "type": "linear"
-            },
-            "showPoints": "auto",
-            "spanNulls": false,
-            "stacking": {
-              "group": "A",
-              "mode": "none"
-            },
-            "thresholdsStyle": {
-              "mode": "off"
-            }
-          },
-          "mappings": [],
-          "thresholds": {
-            "mode": "absolute",
-            "steps": [
-              {
-                "color": "green",
-                "value": null
-              },
-              {
-                "color": "red",
-                "value": 80
-              }
-            ]
-          }
-        },
-        "overrides": []
-      },
-      "gridPos": {
-        "h": 8,
-        "w": 8,
-        "x": 8,
-        "y": 8
-      },
-      "id": 6,
-      "options": {
-        "legend": {
-          "calcs": [],
-          "displayMode": "list",
-          "placement": "bottom"
-        },
-        "tooltip": {
-          "mode": "single"
-        }
-      },
-      "targets": [
-        {
-          "format": "time_series",
-          "group": [],
-          "metricColumn": "none",
-          "queryType": "randomWalk",
-          "rawQuery": true,
-          "rawSql": "SELECT\n  observation_date AS \"time\",\n  value as \"Hemoglobin A1c\",\n  ref_range_high as \"Reference Range High\",\n  ref_range_low as \"Reference Range Low\"\nFROM hk_clinical_observation\nWHERE\n  $__timeFilter(observation_date)\nAND\n  code_display = 'Hemoglobin A1c'\nORDER BY 1",
-          "refId": "A",
-          "select": [
-            [
-              {
-                "params": [
-                  "ref_range_high"
-                ],
-                "type": "column"
-              }
-            ]
-          ],
-          "table": "hk_clinical_observation",
-          "timeColumn": "observation_date",
-          "timeColumnType": "timestamp",
-          "where": [
-            {
-              "name": "$__timeFilter",
-              "params": [],
-              "type": "macro"
-            }
-          ]
-        }
-      ],
-      "title": "A1C",
-      "type": "timeseries"
-    },
-    {
-      "datasource": "Health Kit",
-      "fieldConfig": {
-        "defaults": {
-          "color": {
-            "mode": "palette-classic"
-          },
-          "custom": {
-            "axisLabel": "",
-            "axisPlacement": "auto",
-            "barAlignment": 0,
-            "drawStyle": "line",
-            "fillOpacity": 0,
-            "gradientMode": "none",
-            "hideFrom": {
-              "legend": false,
-              "tooltip": false,
-              "viz": false
-            },
-            "lineInterpolation": "linear",
-            "lineWidth": 1,
-            "pointSize": 5,
-            "scaleDistribution": {
-              "type": "linear"
-            },
-            "showPoints": "auto",
-            "spanNulls": false,
-            "stacking": {
-              "group": "A",
-              "mode": "none"
-            },
-            "thresholdsStyle": {
-              "mode": "off"
-            }
-          },
-          "mappings": [],
-          "thresholds": {
-            "mode": "absolute",
-            "steps": [
-              {
-                "color": "green",
-                "value": null
-              },
-              {
-                "color": "red",
-                "value": 80
-              }
-            ]
-          }
-        },
-        "overrides": []
-      },
-      "gridPos": {
-        "h": 8,
-        "w": 8,
-        "x": 16,
-        "y": 8
-      },
-      "id": 7,
-      "options": {
-        "legend": {
-          "calcs": [],
-          "displayMode": "list",
-          "placement": "bottom"
-        },
-        "tooltip": {
-          "mode": "single"
-        }
-      },
-      "targets": [
-        {
-          "format": "time_series",
-          "group": [],
-          "metricColumn": "none",
-          "queryType": "randomWalk",
-          "rawQuery": true,
-          "rawSql": "SELECT\n  observation_date AS \"time\",\n  value as \"Vitamin D, 25-Hydroxy\",\n  ref_range_high as \"Reference Range High\",\n  ref_range_low as \"Reference Range Low\"\nFROM hk_clinical_observation\nWHERE\n  $__timeFilter(observation_date)\nAND\n  code_display = 'Vitamin D, 25-Hydroxy'\nORDER BY 1",
-          "refId": "A",
-          "select": [
-            [
-              {
-                "params": [
-                  "ref_range_high"
-                ],
-                "type": "column"
-              }
-            ]
-          ],
-          "table": "hk_clinical_observation",
-          "timeColumn": "observation_date",
-          "timeColumnType": "timestamp",
-          "where": [
-            {
-              "name": "$__timeFilter",
-              "params": [],
-              "type": "macro"
-            }
-          ]
-        }
-      ],
-      "title": "Vitamin D",
       "type": "timeseries"
     }
   ],
+  "refresh": false,
   "schemaVersion": 30,
   "style": "dark",
   "tags": [],
   "templating": {
-    "list": []
+    "list": [
+      {
+        "allValue": null,
+        "current": {
+          "selected": true,
+          "text": [
+            "Lipid Panel"
+          ],
+          "value": [
+            "Lipid Panel"
+          ]
+        },
+        "datasource": "Health Kit",
+        "definition": "SELECT distinct(panel)\nFROM hk_clinical_record\nORDER BY panel",
+        "description": "The type of panel performed.",
+        "error": null,
+        "hide": 0,
+        "includeAll": true,
+        "label": "Panel",
+        "multi": true,
+        "name": "panel",
+        "options": [],
+        "query": "SELECT distinct(panel)\nFROM hk_clinical_record\nORDER BY panel",
+        "refresh": 1,
+        "regex": "",
+        "skipUrlSync": false,
+        "sort": 0,
+        "type": "query"
+      },
+      {
+        "allValue": null,
+        "current": {
+          "selected": true,
+          "text": [
+            "All"
+          ],
+          "value": [
+            "$__all"
+          ]
+        },
+        "datasource": "Health Kit",
+        "definition": "SELECT DISTINCT(code_display)\nFROM hk_clinical_observation\nWHERE record_id in (\n  SELECT id FROM hk_clinical_record WHERE panel IN ($panel)\n)",
+        "description": "The type of observation being made (e.g. cholesterol, triglycerides, etc.)",
+        "error": null,
+        "hide": 0,
+        "includeAll": true,
+        "label": "Code Display",
+        "multi": true,
+        "name": "code_display",
+        "options": [],
+        "query": "SELECT DISTINCT(code_display)\nFROM hk_clinical_observation\nWHERE record_id in (\n  SELECT id FROM hk_clinical_record WHERE panel IN ($panel)\n)",
+        "refresh": 2,
+        "regex": "",
+        "skipUrlSync": false,
+        "sort": 5,
+        "type": "query"
+      }
+    ]
   },
   "time": {
     "from": "now-8y",
@@ -650,6 +297,6 @@
   "timepicker": {},
   "timezone": "",
   "title": "Labs",
-  "uid": "0oT5VdM7z",
-  "version": 3
+  "uid": "T6OnpXMnz",
+  "version": 9
 }
