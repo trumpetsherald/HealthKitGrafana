@@ -24,8 +24,10 @@ and place the export.xml file into the apple_health_export directory of this rep
 6. That's it! You should be able to browse your health data graphs.
 
 ## Screenshots
-This summary will probably become it's own dashboard as it expands
-![overview](./docs/overview.png)
+You can see daily summaries of metrics collected via iPhone
+![summaries1](./docs/daily_summaries_1.png)
+
+![summaries2](./docs/daily_summaries_2.png)
 
 I'm not happy with this but it's good enough till inspiration hits
 ![activity](./docs/activity.png)
@@ -46,7 +48,7 @@ And
 ## Known Issues
 * The queries are hard coded to US/MDT timezone. I think in the code I'll 
 want to convert timestamps to UTC before insertion in the DB.
-* Currently I've only test labs against the files pulled from LabCorp. I 
+* Currently, I've only test labs against the files pulled from LabCorp. I 
 have low expectations of it working for other providers considering I 
 hard coded it to look only at files that start with "DiagnosticReport"
 * The Labs implementation needs a lot of error checking, currently

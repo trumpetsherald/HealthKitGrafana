@@ -236,3 +236,36 @@ class HKGDatabase(object):
                      "EXCLUDED.value);"
 
         return self.insert_values(clinical_observations, upsert_sql)
+
+    def insert_activity_summaries(self, activity_summaries):
+        upsert_sql = "INSERT INTO public.hk_activity_summary(" \
+                     "  summary_date," \
+                     "  active_energy_burned," \
+                     "  active_energy_burned_goal," \
+                     "  active_energy_burned_unit," \
+                     "  apple_move_time," \
+                     "  apple_move_time_goal, " \
+                     "  apple_exercise_time, " \
+                     "  apple_exercise_time_goal, " \
+                     "  apple_stand_hours, " \
+                     "  apple_stand_hours_goal" \
+                     ") VALUES %s " \
+                     "ON CONFLICT ON CONSTRAINT" \
+                     "  hk_activity_summary_pkey " \
+                     "DO UPDATE " \
+                     "SET (active_energy_burned, active_energy_burned_goal," \
+                     "active_energy_burned_unit, apple_move_time, " \
+                     "apple_move_time_goal, apple_exercise_time, " \
+                     "apple_exercise_time_goal, apple_stand_hours, " \
+                     "apple_stand_hours_goal) = " \
+                     "(EXCLUDED.active_energy_burned, " \
+                     "EXCLUDED.active_energy_burned_goal, " \
+                     "EXCLUDED.active_energy_burned_unit, " \
+                     "EXCLUDED.apple_move_time, " \
+                     "EXCLUDED.apple_move_time_goal, " \
+                     "EXCLUDED.apple_exercise_time, " \
+                     "EXCLUDED.apple_exercise_time_goal, " \
+                     "EXCLUDED.apple_stand_hours, " \
+                     "EXCLUDED.apple_stand_hours_goal);"
+
+        return self.insert_values(activity_summaries, upsert_sql)

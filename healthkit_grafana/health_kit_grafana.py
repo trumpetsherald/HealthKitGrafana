@@ -127,7 +127,7 @@ def get_quantity_records(xml_records):
             if len(duplicates[key]) == 1:
                 result.append(quantity_record)
             else:
-                LOGGER.warn("Found duplicate records: %s" % duplicates[key])
+                LOGGER.warning("Found duplicate records: %s" % duplicates[key])
 
     return result
 
@@ -176,7 +176,7 @@ def get_category_records(xml_records):
             if len(duplicates[key]) == 1:
                 result.append(category_record)
             else:
-                LOGGER.warn("Found duplicate records: %s" % duplicates[key])
+                LOGGER.warning("Found duplicate records: %s" % duplicates[key])
 
     return result
 
@@ -325,7 +325,41 @@ def import_workouts(workouts_xml):
 
 
 def import_activity_summaries(summaries_xml):
-    LOGGER.debug(summaries_xml)
+    global DATABASE
+    start = datetime.datetime.now()
+    summaries = []
+
+    for summary in summaries_xml:
+        summary_date = summary.getAttribute('dateComponents')
+
+        if not summary_date:
+            LOGGER.error("Date was null for summary: %s" % summary)
+            continue
+
+        active_energy_burned = summary.getAttribute('activeEnergyBurned')
+        active_energy_burned_goal = summary.getAttribute(
+            'activeEnergyBurnedGoal')
+        active_energy_burned_unit = summary.getAttribute(
+            'activeEnergyBurnedUnit')
+        apple_move_time = summary.getAttribute('appleMoveTime')
+        apple_move_time_goal = summary.getAttribute('appleMoveTimeGoal')
+        apple_exercise_time = summary.getAttribute('appleExerciseTime')
+        apple_exercise_time_goal = summary.getAttribute(
+            'appleExerciseTimeGoal')
+        apple_stand_hours = summary.getAttribute('appleStandHours')
+        apple_stand_hours_goal = summary.getAttribute('appleStandHoursGoal')
+
+        summaries.append(
+            (summary_date, active_energy_burned, active_energy_burned_goal,
+             active_energy_burned_unit, apple_move_time, apple_move_time_goal,
+             apple_exercise_time, apple_exercise_time_goal,
+             apple_stand_hours, apple_stand_hours_goal)
+        )
+
+    DATABASE.insert_activity_summaries(summaries)
+
+    end = datetime.datetime.now() - start
+    LOGGER.info("Adding Activity Summaries took %s seconds." % end)
 
 
 def remove_duplicate_clinical_records(clinical_records_xml):
@@ -383,14 +417,14 @@ def remove_duplicate_clinical_records(clinical_records_xml):
 def import_clinical_records(clinical_records_xml):
     global DATABASE
     start = datetime.datetime.now()
-    LOGGER.debug(clinical_records_xml)
+
     records, observations = \
         get_clinical_records_and_observations(clinical_records_xml)
 
     DATABASE.insert_clinical_records(records)
     DATABASE.insert_clinical_observations(observations)
     end = datetime.datetime.now() - start
-    LOGGER.info("Adding Clinical Records (labs) took %s second." % end)
+    LOGGER.info("Adding Clinical Records (labs) took %s seconds." % end)
 
 
 def import_data():
