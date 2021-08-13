@@ -126,4 +126,28 @@ psql -v ON_ERROR_STOP=1 --username "$POSTGRES_USER" --dbname "$POSTGRES_DB" <<-E
 
     ALTER TABLE public.hk_clinical_observation
         OWNER to $POSTGRES_USER;
+
+    ### Activity Summaries ###
+
+    CREATE TABLE IF NOT EXISTS public.hk_activity_summary
+    (
+        summary_date date NOT NULL,
+        active_energy_burned double precision,
+        active_energy_burned_goal double precision,
+        active_energy_burned_unit text COLLATE pg_catalog."default",
+        apple_move_time integer,
+        apple_move_time_goal integer,
+        apple_exercise_time integer,
+        apple_exercise_time_goal integer,
+        apple_stand_hours integer,
+        apple_stand_hours_goal integer,
+        CONSTRAINT hk_activity_summary_pkey PRIMARY KEY (summary_date)
+    )
+    WITH (
+        OIDS = FALSE
+    )
+    TABLESPACE pg_default;
+
+    ALTER TABLE public.hk_activity_summary
+        OWNER to $POSTGRES_USER;
 EOSQL

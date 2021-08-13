@@ -176,7 +176,11 @@ def get_category_records(xml_records):
             if len(duplicates[key]) == 1:
                 result.append(category_record)
             else:
-                LOGGER.warning("Found duplicate records: %s" % duplicates[key])
+                LOGGER.debug("Found duplicate records: %s" % duplicates[key])
+
+    LOGGER.info("Found %s records and %s duplicates." % (
+        len(result), len(duplicates))
+    )
 
     return result
 
@@ -187,12 +191,12 @@ def get_observations_from_report(report):
 
     for observation in report['contained']:
         if 'valueString' in observation:
-            LOGGER.error(
+            LOGGER.debug(
                 "Observation value is a string, skipping: %s" % observation)
             continue
 
         if 'valueQuantity' not in observation:
-            LOGGER.error(
+            LOGGER.warning(
                 "Observation is missing a quantity, skipping: %s" % observation
             )
             continue
