@@ -377,9 +377,39 @@ def import_records(records_xml):
 
 
 def import_workouts(workouts_xml):
-    LOGGER.info("Importing %s Workout elements." % len(workouts_xml))
-    LOGGER.debug(workouts_xml)
     start = datetime.datetime.now()
+    LOGGER.info("Importing %s Workout elements." % len(workouts_xml))
+    workouts = []
+
+    for workout in workouts_xml:
+        workout_activity_type = workout.getAttribute('workoutActivityType')
+        duration = workout.getAttribute('duration')
+        duration_unit = workout.getAttribute('durationUnit')
+        total_distance = workout.getAttribute('totalDistance')
+        total_distance_unit = workout.getAttribute('totalDistanceUnit')
+        total_energy_burned = workout.getAttribute('totalEnergyBurned')
+        total_energy_burned_unit = workout.getAttribute('totalEnergyBurnedUnit')
+        source_name = workout.getAttribute('sourceName')
+        source_version = workout.getAttribute('sourceVersion')
+        # device = workout.getAttribute('device')
+        creation_date = workout.getAttribute('creationDate')
+        start_date = workout.getAttribute('startDate')
+        end_date = workout.getAttribute('endDate')
+
+        if not all([workout_activity_type, source_name, start_date, end_date]):
+            LOGGER.error(
+                "Required field missing, skipping workout %s" % workout)
+            continue
+
+        workouts.append(
+            (workout_activity_type, duration, duration_unit,
+             total_distance, total_distance_unit,
+             total_energy_burned, total_energy_burned_unit,
+             source_name, source_version,
+             creation_date, start_date, end_date)
+        )
+
+    DATABASE.insert_workouts(workouts)
     LOGGER.info(
         "Importing Workouts took %s" % (datetime.datetime.now() - start))
 
@@ -513,12 +543,12 @@ def import_data():
                      "Apple HealthKit export and try again." % EXPORT_XML_PATH)
         exit(42)
 
-    import_me(me)
-    import_records(records)
+    # import_me(me)
+    # import_records(records)
     import_workouts(workouts)
-    import_activity_summaries(activity_summaries)
-    unique_records = remove_duplicate_clinical_records(clinical_records)
-    import_clinical_records(unique_records)
+    # import_activity_summaries(activity_summaries)
+    # unique_records = remove_duplicate_clinical_records(clinical_records)
+    # import_clinical_records(unique_records)
 
     end = datetime.datetime.now()
     LOGGER.info("Exiting, everything took %s seconds." % (end - start))

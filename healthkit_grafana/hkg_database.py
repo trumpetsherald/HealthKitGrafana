@@ -269,3 +269,30 @@ class HKGDatabase(object):
                      "EXCLUDED.apple_stand_hours_goal);"
 
         return self.insert_values(activity_summaries, upsert_sql)
+
+    def insert_workouts(self, workouts):
+        upsert_sql = "INSERT INTO public.hk_workout(" \
+                     "workout_activity_type, " \
+                     "duration, duration_unit, " \
+                     "total_distance, total_distance_unit, " \
+                     "total_energy_burned, total_energy_burned_unit, " \
+                     "source_name, source_version, " \
+                     "creation_date, start_date, end_date" \
+                     ") VALUES %s " \
+                     "ON CONFLICT ON CONSTRAINT" \
+                     "  hk_workout_pkey " \
+                     "DO UPDATE " \
+                     "SET (duration, duration_unit," \
+                     "total_distance, total_distance_unit, " \
+                     "total_energy_burned, total_energy_burned_unit, " \
+                     "source_version, creation_date) = " \
+                     "(EXCLUDED.duration, " \
+                     "EXCLUDED.duration_unit, " \
+                     "EXCLUDED.total_distance, " \
+                     "EXCLUDED.total_distance_unit, " \
+                     "EXCLUDED.total_energy_burned, " \
+                     "EXCLUDED.total_energy_burned_unit, " \
+                     "EXCLUDED.source_version, " \
+                     "EXCLUDED.creation_date);"
+
+        return self.insert_values(workouts, upsert_sql)

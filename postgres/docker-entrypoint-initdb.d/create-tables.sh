@@ -179,7 +179,7 @@ psql -v ON_ERROR_STOP=1 --username "$POSTGRES_USER" --dbname "$POSTGRES_DB" <<-E
         start_date timestamp with time zone NOT NULL,
         end_date timestamp with time zone NOT NULL,
         CONSTRAINT hk_workout_pkey PRIMARY KEY (workout_id),
-      CONSTRAINT hk_workout_unique UNIQUE (workout_id, workout_activity_type, source_name, start_date, end_date)
+        CONSTRAINT hk_workout_unique UNIQUE (workout_id, workout_activity_type, source_name, start_date, end_date)
     )
     WITH (
         OIDS = FALSE
