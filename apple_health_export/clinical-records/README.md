@@ -1,1 +1,0 @@
-Clinical Records (think Labs from LabCorp, Quest, etc.) go here.

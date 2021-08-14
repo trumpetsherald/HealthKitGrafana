@@ -8,9 +8,11 @@ from xml.dom import minidom
 
 LOGGER: hkg_logger = hkg_logger.LOGGER
 DATABASE: hkg_database
+
 EXPORT_DIR_PATH = os.environ.get(
     'HKG_EXPORT_FILE_PATH',
     '/opt/healthkit_grafana/apple_health_export')
+EXPORT_XML_PATH = EXPORT_DIR_PATH + "/export.xml"
 
 DEFAULT_PERSON_ID = 1
 STRIP_PREFIXES = [
@@ -28,6 +30,23 @@ HKCategoryValueAppleStandHourIdle = "HKCategoryValueAppleStandHourIdle"
 HKCategoryValueAppleStandHourStood = "HKCategoryValueAppleStandHourStood"
 HKCategoryValueHeadphoneAudioExposureEventSevenDayLimit = \
     "HKCategoryValueHeadphoneAudioExposureEventSevenDayLimit"
+
+
+def check_for_files() -> bool:
+    result = True
+
+    if not os.path.isdir(EXPORT_DIR_PATH):
+        LOGGER.error("The EXPORT_DIR_PATH environment variable must point "
+                     "to a directory. Instead I have: %s" % EXPORT_DIR_PATH)
+        result = False
+
+    if not os.path.isfile(EXPORT_XML_PATH):
+        LOGGER.error("The export.xml file is either missing or not a file. "
+                     "Please ensure that the following exists and is a "
+                     "valid file: %s" % EXPORT_DIR_PATH)
+        result = False
+
+    return result
 
 
 def connect_to_db():
@@ -51,41 +70,51 @@ def connect_to_db():
     try:
         DATABASE.connect_to_db()
     except Exception:
-        LOGGER.error("Could not connect to database after 10 retries.")
+        LOGGER.error("Could not connect to database after 10 retries. "
+                     "Make sure the database is running and your credentials "
+                     "are correct.")
+        LOGGER.error("Export failed.")
         exit(42)
 
 
 def parse_export_xml() -> []:
-    me = None
-    records = None
-    workouts = None
-    activity_summaries = None
-    clinical_records = None
+    start = datetime.datetime.now()
     LOGGER.info("Parsing export file.")
-    file_path = EXPORT_DIR_PATH + "/export.xml"
 
-    if os.path.isfile(file_path):
-        xml_doc = minidom.parse(file_path)
-        me = xml_doc.getElementsByTagName('Me')
-        if me:
-            LOGGER.info("Me element found.")
+    xml_doc = minidom.parse(EXPORT_XML_PATH)
+    me = xml_doc.getElementsByTagName('Me')
+    if me:
+        LOGGER.info("Me element found.")
+    else:
+        LOGGER.warning("No <Me> element found.")
 
-        records = xml_doc.getElementsByTagName('Record')
-        if records:
-            LOGGER.info("%s records found." % len(records))
+    records = xml_doc.getElementsByTagName('Record')
+    if records:
+        LOGGER.info("%s records found." % len(records))
+    else:
+        LOGGER.warning("No <Record> elements found.")
 
-        workouts = xml_doc.getElementsByTagName('Workout')
-        if workouts:
-            LOGGER.info("%s workouts found." % len(workouts))
+    workouts = xml_doc.getElementsByTagName('Workout')
+    if workouts:
+        LOGGER.info("%s workouts found." % len(workouts))
+    else:
+        LOGGER.warning("No <Workout> elements found.")
 
-        activity_summaries = xml_doc.getElementsByTagName('ActivitySummary')
-        if activity_summaries:
-            LOGGER.info(
-                "%s activity_summaries found." % len(activity_summaries))
+    activity_summaries = xml_doc.getElementsByTagName('ActivitySummary')
+    if activity_summaries:
+        LOGGER.info(
+            "%s activity_summaries found." % len(activity_summaries))
+    else:
+        LOGGER.warning("No <ActivitySummary> elements found.")
 
-        clinical_records = xml_doc.getElementsByTagName('ClinicalRecord')
-        if records:
-            LOGGER.info("%s clinical_records found." % len(clinical_records))
+    clinical_records = xml_doc.getElementsByTagName('ClinicalRecord')
+    if records:
+        LOGGER.info("%s clinical_records found." % len(clinical_records))
+    else:
+        LOGGER.warning("No <ClinicalRecord> elements found.")
+
+    read_done = datetime.datetime.now()
+    LOGGER.info("Reading export.xml took %s seconds." % (read_done - start))
 
     return me, records, workouts, activity_summaries, clinical_records
 
@@ -93,6 +122,7 @@ def parse_export_xml() -> []:
 def get_quantity_records(xml_records):
     result = []
     duplicates = {}
+    dup_count = 0
 
     for record in xml_records:
         record_type = record.getAttribute('type')
@@ -127,7 +157,11 @@ def get_quantity_records(xml_records):
             if len(duplicates[key]) == 1:
                 result.append(quantity_record)
             else:
-                LOGGER.warning("Found duplicate records: %s" % duplicates[key])
+                dup_count += 1
+                LOGGER.debug("Found duplicate records: %s" % duplicates[key])
+
+    LOGGER.info("Found %s quantity records and %s duplicates."
+                % (len(result), dup_count))
 
     return result
 
@@ -135,6 +169,7 @@ def get_quantity_records(xml_records):
 def get_category_records(xml_records):
     result = []
     duplicates = {}
+    dup_count = 0
 
     for record in xml_records:
         record_type = record.getAttribute('type')
@@ -176,11 +211,11 @@ def get_category_records(xml_records):
             if len(duplicates[key]) == 1:
                 result.append(category_record)
             else:
+                dup_count += 1
                 LOGGER.debug("Found duplicate records: %s" % duplicates[key])
 
-    LOGGER.info("Found %s records and %s duplicates." % (
-        len(result), len(duplicates))
-    )
+    LOGGER.info("Found %s category records and %s duplicates." %
+                (len(result), dup_count))
 
     return result
 
@@ -188,6 +223,7 @@ def get_category_records(xml_records):
 def get_observations_from_report(report):
     result = []
     record_id = report['id']
+    missing_quantity = 0
 
     for observation in report['contained']:
         if 'valueString' in observation:
@@ -196,9 +232,10 @@ def get_observations_from_report(report):
             continue
 
         if 'valueQuantity' not in observation:
-            LOGGER.warning(
+            LOGGER.debug(
                 "Observation is missing a quantity, skipping: %s" % observation
             )
+            missing_quantity += 1
             continue
 
         observation_id = observation['id']
@@ -230,7 +267,7 @@ def get_observations_from_report(report):
              interpretation, reference_high, reference_low, unit, value)
         )
 
-    return result
+    return result, missing_quantity
 
 
 #  This will return a clinical record tuple and a list of observation tuples
@@ -246,15 +283,20 @@ def get_record_and_observations(report, hk_type, source_name, resource_path):
     issue_time = report.get('issued', None)
     category = report.get('category', {}).get('coding', [])[0].get('code')
     panel = report.get('code', {}).get('text')
-    observations = get_observations_from_report(report)
+    observations, missing_quantity_count = get_observations_from_report(report)
 
-    return (report_id, subject, effective_time, issue_time, hk_type,
-            source_name, resource_path, category, panel), observations
+    return (
+               report_id, subject, effective_time, issue_time, hk_type,
+               source_name, resource_path, category, panel
+           ), \
+        observations, \
+        missing_quantity_count
 
 
 def get_clinical_records_and_observations(clinical_records_xml):
     records = []
     all_observations = []
+    observations_missing_quantity = 0
 
     for cr in clinical_records_xml:
         record_id = cr.getAttribute('identifier')
@@ -286,13 +328,33 @@ def get_clinical_records_and_observations(clinical_records_xml):
 
         with open(file_path) as report_file:
             report = json.load(report_file)
-            record, observations = get_record_and_observations(
-                report, hk_type, source_name, resource_path)
+            record, observations, missing_quantity_count = \
+                get_record_and_observations(
+                    report, hk_type, source_name, resource_path
+                )
+
             if record and observations:
                 records.append(record)
                 all_observations.extend(observations)
             else:
-                LOGGER.error("Report or observations were null.")
+                LOGGER.debug("Report or observations were null. "
+                             "Record: %s Observations: %s" %
+                             (report, observations))
+
+            observations_missing_quantity += missing_quantity_count
+
+    empty_reports = len(clinical_records_xml) - len(records)
+    if empty_reports > 0:
+        LOGGER.warning("%s Reports were empty. This is normal for "
+                       "records where all values are strings. It could "
+                       "also indicate parsing errors. Turn on debug for "
+                       "more details." % empty_reports)
+
+    if observations_missing_quantity > 0:
+        LOGGER.warning("%s Observations were missing a quantity value. "
+                       "This isn't necessarily a bad thing. Notes and "
+                       "corrections can cause this. Turn on debug for "
+                       "more details." % observations_missing_quantity)
 
     return records, all_observations
 
@@ -302,35 +364,29 @@ def import_me(me_xml):
 
 
 def import_records(records_xml):
+    global DATABASE
     start = datetime.datetime.now()
-    LOGGER.info("Importing export.xml")
+    LOGGER.info("Importing %s Record elements." % len(records_xml))
     quantity_records = get_quantity_records(records_xml)
     category_records = get_category_records(records_xml)
-    read_done = datetime.datetime.now()
-    LOGGER.info("Reading export.xml took %s seconds." % (read_done - start))
 
-    LOGGER.info("Adding %s quantity records to the database." %
-                len(quantity_records))
     DATABASE.insert_quantity_records(quantity_records)
-
-    LOGGER.info("Adding %s category records to the database." %
-                len(category_records))
     DATABASE.insert_category_records(category_records)
-
-    insert_done = datetime.datetime.now()
-    LOGGER.info("Inserting category records took %s seconds." %
-                (insert_done - read_done))
-    LOGGER.info("Total time to parse export.xml and update DB was %s" %
-                (insert_done - start))
+    LOGGER.info(
+        "Importing Records took %s" % (datetime.datetime.now() - start))
 
 
 def import_workouts(workouts_xml):
+    LOGGER.info("Importing %s Workout elements." % len(workouts_xml))
     LOGGER.debug(workouts_xml)
+    start = datetime.datetime.now()
+    LOGGER.info(
+        "Importing Workouts took %s" % (datetime.datetime.now() - start))
 
 
 def import_activity_summaries(summaries_xml):
-    global DATABASE
     start = datetime.datetime.now()
+    LOGGER.info("Importing %s Activity Summary elements." % len(summaries_xml))
     summaries = []
 
     for summary in summaries_xml:
@@ -363,10 +419,11 @@ def import_activity_summaries(summaries_xml):
     DATABASE.insert_activity_summaries(summaries)
 
     end = datetime.datetime.now() - start
-    LOGGER.info("Adding Activity Summaries took %s seconds." % end)
+    LOGGER.info("Importing Activity Summaries took %s seconds." % end)
 
 
 def remove_duplicate_clinical_records(clinical_records_xml):
+    LOGGER.info("Removing duplicate clinical records.")
     id_record_map = {}
     duplicates = []
     skipped = 0
@@ -421,6 +478,8 @@ def remove_duplicate_clinical_records(clinical_records_xml):
 def import_clinical_records(clinical_records_xml):
     global DATABASE
     start = datetime.datetime.now()
+    LOGGER.info("Importing %s Clinical Record (lab results) elements."
+                % len(clinical_records_xml))
 
     records, observations = \
         get_clinical_records_and_observations(clinical_records_xml)
@@ -428,7 +487,7 @@ def import_clinical_records(clinical_records_xml):
     DATABASE.insert_clinical_records(records)
     DATABASE.insert_clinical_observations(observations)
     end = datetime.datetime.now() - start
-    LOGGER.info("Adding Clinical Records (labs) took %s seconds." % end)
+    LOGGER.info("Importing Clinical Records took %s seconds." % end)
 
 
 def import_data():
@@ -436,9 +495,23 @@ def import_data():
     start = datetime.datetime.now()
     LOGGER.info("Starting Health Kit Exporter.")
 
+    if not check_for_files():
+        LOGGER.error("Export Failed. Check the logs for errors and try again.")
+        exit(42)
+
     connect_to_db()
     me, records, workouts, activity_summaries, \
-        clinical_records = parse_export_xml()
+        clinical_records = None, None, None, None, None
+    # noinspection PyBroadException
+    try:
+        me, records, workouts, activity_summaries, \
+            clinical_records = parse_export_xml()
+    except Exception as ex:
+        LOGGER.error(
+            "Encountered the following error while parsing export.", ex)
+        LOGGER.error("Parsing of %s failed. Make sure it's a valid "
+                     "Apple HealthKit export and try again." % EXPORT_XML_PATH)
+        exit(42)
 
     import_me(me)
     import_records(records)

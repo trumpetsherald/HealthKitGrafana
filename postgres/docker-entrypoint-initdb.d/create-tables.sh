@@ -1,7 +1,9 @@
-#!/bin/ash
+-!/bin/ash
 set -e
 
 psql -v ON_ERROR_STOP=1 --username "$POSTGRES_USER" --dbname "$POSTGRES_DB" <<-EOSQL
+
+    -- Person ----------------------------------------------------------------
 
     CREATE TABLE IF NOT EXISTS public.hk_person
     (
@@ -24,6 +26,8 @@ psql -v ON_ERROR_STOP=1 --username "$POSTGRES_USER" --dbname "$POSTGRES_DB" <<-E
         OWNER to $POSTGRES_USER;
 
     INSERT INTO public.hk_person(fullname, dob) VALUES ('default user', '1942-02-01');
+
+    -- Quantity Records ------------------------------------------------------
 
     CREATE TABLE IF NOT EXISTS public.hk_quantity_record
     (
@@ -53,6 +57,8 @@ psql -v ON_ERROR_STOP=1 --username "$POSTGRES_USER" --dbname "$POSTGRES_DB" <<-E
     ALTER TABLE public.hk_quantity_record
         OWNER to $POSTGRES_USER;
 
+    -- Category Records ------------------------------------------------------
+
     CREATE TABLE IF NOT EXISTS public.hk_category_record
     (
         record_id serial NOT NULL,
@@ -81,6 +87,8 @@ psql -v ON_ERROR_STOP=1 --username "$POSTGRES_USER" --dbname "$POSTGRES_DB" <<-E
     ALTER TABLE public.hk_category_record
         OWNER to $POSTGRES_USER;
 
+    -- Clinical Records ------------------------------------------------------
+
     CREATE TABLE IF NOT EXISTS public.hk_clinical_record
     (
         id text COLLATE pg_catalog."default" NOT NULL,
@@ -101,6 +109,8 @@ psql -v ON_ERROR_STOP=1 --username "$POSTGRES_USER" --dbname "$POSTGRES_DB" <<-E
 
     ALTER TABLE public.hk_clinical_record
         OWNER to $POSTGRES_USER;
+
+    -- Clinical Observations -------------------------------------------------
 
     CREATE TABLE IF NOT EXISTS public.hk_clinical_observation
     (
@@ -127,7 +137,7 @@ psql -v ON_ERROR_STOP=1 --username "$POSTGRES_USER" --dbname "$POSTGRES_DB" <<-E
     ALTER TABLE public.hk_clinical_observation
         OWNER to $POSTGRES_USER;
 
-    ### Activity Summaries ###
+    -- Activity Summaries ----------------------------------------------------
 
     CREATE TABLE IF NOT EXISTS public.hk_activity_summary
     (
@@ -149,5 +159,103 @@ psql -v ON_ERROR_STOP=1 --username "$POSTGRES_USER" --dbname "$POSTGRES_DB" <<-E
     TABLESPACE pg_default;
 
     ALTER TABLE public.hk_activity_summary
+        OWNER to $POSTGRES_USER;
+
+    -- Workouts --------------------------------------------------------------
+
+    CREATE TABLE IF NOT EXISTS public.hk_workout
+    (
+        workout_id serial NOT NULL,
+        workout_activity_type text COLLATE pg_catalog."default" NOT NULL,
+        duration double precision,
+        duration_unit text COLLATE pg_catalog."default",
+        total_distance double precision,
+        total_distance_unit text COLLATE pg_catalog."default",
+        total_energy_burned double precision,
+        total_energy_burned_unit text COLLATE pg_catalog."default",
+        source_name text COLLATE pg_catalog."default" NOT NULL,
+        source_version text COLLATE pg_catalog."default",
+        creation_date timestamp with time zone,
+        start_date timestamp with time zone NOT NULL,
+        end_date timestamp with time zone NOT NULL,
+        CONSTRAINT hk_workout_pkey PRIMARY KEY (workout_id),
+      CONSTRAINT hk_workout_unique UNIQUE (workout_id, workout_activity_type, source_name, start_date, end_date)
+    )
+    WITH (
+        OIDS = FALSE
+    )
+    TABLESPACE pg_default;
+
+    ALTER TABLE public.hk_workout
+        OWNER to $POSTGRES_USER;
+
+    -- Workout Metadata ------------------------------------------------------
+
+    CREATE TABLE IF NOT EXISTS public.hk_workout_metadata
+    (
+        workout_id integer NOT NULL,
+        meta_key text COLLATE pg_catalog."default" NOT NULL,
+        meta_value text COLLATE pg_catalog."default" NOT NULL,
+        CONSTRAINT hk_workout_metadata_pkey PRIMARY KEY (meta_key, workout_id),
+        CONSTRAINT hk_workout_metadata_workout_id_fkey FOREIGN KEY (workout_id)
+            REFERENCES public.hk_workout (workout_id) MATCH SIMPLE
+            ON UPDATE NO ACTION
+            ON DELETE NO ACTION
+    )
+    WITH (
+        OIDS = FALSE
+    )
+    TABLESPACE pg_default;
+
+    ALTER TABLE public.hk_workout_metadata
+        OWNER to $POSTGRES_USER;
+
+    -- Workout Event ---------------------------------------------------------
+
+    CREATE TABLE IF NOT EXISTS public.hk_workout_event
+    (
+        workout_id integer NOT NULL,
+        event_type text COLLATE pg_catalog."default" NOT NULL,
+        event_date timestamp with time zone NOT NULL,
+        duration double precision,
+        duration_unit double precision,
+        CONSTRAINT hk_workout_event_pkey PRIMARY KEY (event_date, event_type, workout_id),
+        CONSTRAINT hk_workout_event_workout_id_fkey FOREIGN KEY (workout_id)
+            REFERENCES public.hk_workout (workout_id) MATCH SIMPLE
+            ON UPDATE NO ACTION
+            ON DELETE NO ACTION
+    )
+    WITH (
+        OIDS = FALSE
+    )
+    TABLESPACE pg_default;
+
+    ALTER TABLE public.hk_workout_event
+        OWNER to $POSTGRES_USER;
+
+    -- Workout Route ---------------------------------------------------------
+
+    CREATE TABLE IF NOT EXISTS public.hk_workout_route
+    (
+        workout_id integer NOT NULL,
+        source_name text COLLATE pg_catalog."default" NOT NULL,
+        source_version text COLLATE pg_catalog."default",
+        device text COLLATE pg_catalog."default",
+        creation_date timestamp with time zone,
+        start_date timestamp with time zone NOT NULL,
+        end_date timestamp with time zone NOT NULL,
+        resource_path text COLLATE pg_catalog."default" NOT NULL,
+        CONSTRAINT hk_workout_route_pkey PRIMARY KEY (end_date, start_date, source_name, workout_id),
+        CONSTRAINT hk_workout_route_workout_id_fkey FOREIGN KEY (workout_id)
+            REFERENCES public.hk_workout (workout_id) MATCH SIMPLE
+            ON UPDATE NO ACTION
+            ON DELETE NO ACTION
+    )
+    WITH (
+        OIDS = FALSE
+    )
+    TABLESPACE pg_default;
+
+    ALTER TABLE public.hk_workout_route
         OWNER to $POSTGRES_USER;
 EOSQL
