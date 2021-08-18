@@ -376,10 +376,51 @@ def import_records(records_xml):
         "Importing Records took %s" % (datetime.datetime.now() - start))
 
 
+def import_workout_metadata(workout_id, metadata_xml):
+    metadata = []
+
+    if len(metadata_xml) == 0:
+        return
+
+    for m in metadata_xml:
+        meta_key = m.getAttribute('key')
+        meta_val = m.getAttribute('value')
+
+        if all([meta_key, meta_val]):
+            if meta_key == 'HKExternalUUID':
+                continue
+
+            metadata.append((workout_id, meta_key, meta_val))
+
+    DATABASE.insert_workout_metadata(metadata)
+
+
+def import_workout_events(workout_id, events_xml):
+    events = []
+
+    if len(events_xml) == 0:
+        return
+
+    for event in events_xml:
+        event_type = event.getAttribute('type')
+        event_date = event.getAttribute('date')
+        duration = event.getAttribute('duration')
+        duration_unit = event.getAttribute('durationUnit')
+
+        if len(duration) == 0:
+            duration = None
+
+        if all([event_type, event_date]):
+            events.append(
+                (workout_id, event_type, event_date, duration, duration_unit, )
+            )
+
+    DATABASE.insert_workout_events(events)
+
+
 def import_workouts(workouts_xml):
     start = datetime.datetime.now()
     LOGGER.info("Importing %s Workout elements." % len(workouts_xml))
-    workouts = []
 
     for workout in workouts_xml:
         workout_activity_type = workout.getAttribute('workoutActivityType')
@@ -395,13 +436,16 @@ def import_workouts(workouts_xml):
         creation_date = workout.getAttribute('creationDate')
         start_date = workout.getAttribute('startDate')
         end_date = workout.getAttribute('endDate')
+        workout_metadata = workout.getElementsByTagName('MetadataEntry')
+        workout_events = workout.getElementsByTagName('WorkoutEvent')
+        workout_route = workout.getElementsByTagName('WorkoutRoute')
 
         if not all([workout_activity_type, source_name, start_date, end_date]):
             LOGGER.error(
                 "Required field missing, skipping workout %s" % workout)
             continue
 
-        workouts.append(
+        workout_id = DATABASE.insert_workout(
             (workout_activity_type, duration, duration_unit,
              total_distance, total_distance_unit,
              total_energy_burned, total_energy_burned_unit,
@@ -409,7 +453,12 @@ def import_workouts(workouts_xml):
              creation_date, start_date, end_date)
         )
 
-    DATABASE.insert_workouts(workouts)
+        if workout_id:
+            import_workout_metadata(workout_id, workout_metadata)
+            import_workout_events(workout_id, workout_events)
+        else:
+            LOGGER.error("Couldn't get ID from inserting workout.")
+
     LOGGER.info(
         "Importing Workouts took %s" % (datetime.datetime.now() - start))
 
@@ -543,12 +592,12 @@ def import_data():
                      "Apple HealthKit export and try again." % EXPORT_XML_PATH)
         exit(42)
 
-    # import_me(me)
-    # import_records(records)
+    import_me(me)
+    import_records(records)
     import_workouts(workouts)
-    # import_activity_summaries(activity_summaries)
-    # unique_records = remove_duplicate_clinical_records(clinical_records)
-    # import_clinical_records(unique_records)
+    import_activity_summaries(activity_summaries)
+    unique_records = remove_duplicate_clinical_records(clinical_records)
+    import_clinical_records(unique_records)
 
     end = datetime.datetime.now()
     LOGGER.info("Exiting, everything took %s seconds." % (end - start))

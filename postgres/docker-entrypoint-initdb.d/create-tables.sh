@@ -179,7 +179,7 @@ psql -v ON_ERROR_STOP=1 --username "$POSTGRES_USER" --dbname "$POSTGRES_DB" <<-E
         start_date timestamp with time zone NOT NULL,
         end_date timestamp with time zone NOT NULL,
         CONSTRAINT hk_workout_pkey PRIMARY KEY (workout_id),
-        CONSTRAINT hk_workout_unique UNIQUE (workout_id, workout_activity_type, source_name, start_date, end_date)
+        CONSTRAINT hk_workout_unique UNIQUE (workout_activity_type, source_name, start_date, end_date)
     )
     WITH (
         OIDS = FALSE
@@ -218,8 +218,8 @@ psql -v ON_ERROR_STOP=1 --username "$POSTGRES_USER" --dbname "$POSTGRES_DB" <<-E
         event_type text COLLATE pg_catalog."default" NOT NULL,
         event_date timestamp with time zone NOT NULL,
         duration double precision,
-        duration_unit double precision,
-        CONSTRAINT hk_workout_event_pkey PRIMARY KEY (event_date, event_type, workout_id),
+        duration_unit text COLLATE pg_catalog."default",
+        CONSTRAINT hk_workout_event_unique UNIQUE (workout_id, event_type, event_date, duration, duration_unit),
         CONSTRAINT hk_workout_event_workout_id_fkey FOREIGN KEY (workout_id)
             REFERENCES public.hk_workout (workout_id) MATCH SIMPLE
             ON UPDATE NO ACTION

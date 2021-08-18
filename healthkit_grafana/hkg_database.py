@@ -94,51 +94,6 @@ class HKGDatabase(object):
 
         return result
 
-    def get_health_records(self):
-        result = self.get_values('SELECT * FROM public.hk_record')
-
-        if result is False:
-            self.logger.error(
-                "An error occurred while getting all health records.")
-        else:
-            self.logger.debug(
-                "Returning %s health records from DB query." % len(result))
-
-        return result
-
-    def reset_db(self):
-        result = True
-        reset_records_sql = \
-            "DELETE FROM public.hk_record;" \
-            "ALTER SEQUENCE hk_record_record_id_seq RESTART WITH 1;"
-
-        cursor = self.connection.cursor()
-        try:
-            cursor.execute(reset_records_sql)
-        except (Exception, psycopg2.Error) as error_ex:
-            self.logger.error("Error executing the following sql: %s"
-                              % reset_records_sql)
-            self.logger.error("Error: " + str(error_ex))
-            result = False
-        finally:
-            cursor.close()
-
-        return result
-
-    def get_health_record(self, record_id):
-        result = self.get_values(
-            'SELECT * FROM public.hk_record where record_id = %s',
-            (record_id,))
-
-        if result is False:
-            self.logger.error(
-                "An error occurred while getting the health record.")
-        else:
-            self.logger.debug(
-                "Got record_id: %s from DB." % record_id)
-
-        return result[0]
-
     def insert_quantity_records(self, health_records):
         upsert_sql = "INSERT INTO public.hk_quantity_record(" \
                      "person_id, " \
@@ -270,7 +225,8 @@ class HKGDatabase(object):
 
         return self.insert_values(activity_summaries, upsert_sql)
 
-    def insert_workouts(self, workouts):
+    def insert_workout(self, workout) -> str:
+        result = ''
         upsert_sql = "INSERT INTO public.hk_workout(" \
                      "workout_activity_type, " \
                      "duration, duration_unit, " \
@@ -278,9 +234,11 @@ class HKGDatabase(object):
                      "total_energy_burned, total_energy_burned_unit, " \
                      "source_name, source_version, " \
                      "creation_date, start_date, end_date" \
-                     ") VALUES %s " \
+                     ") VALUES (" \
+                     "   %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s" \
+                     ")" \
                      "ON CONFLICT ON CONSTRAINT" \
-                     "  hk_workout_pkey " \
+                     "  hk_workout_unique " \
                      "DO UPDATE " \
                      "SET (duration, duration_unit," \
                      "total_distance, total_distance_unit, " \
@@ -293,6 +251,54 @@ class HKGDatabase(object):
                      "EXCLUDED.total_energy_burned, " \
                      "EXCLUDED.total_energy_burned_unit, " \
                      "EXCLUDED.source_version, " \
-                     "EXCLUDED.creation_date);"
+                     "EXCLUDED.creation_date) " \
+                     "RETURNING workout_id;"
 
-        return self.insert_values(workouts, upsert_sql)
+        cursor = self.connection.cursor()
+        try:
+            cursor.execute(upsert_sql, workout)
+            result = cursor.fetchone()[0]
+        except (Exception, psycopg2.Error) as error_ex:
+            self.logger.error(
+                "Error executing the following sql: %s" % upsert_sql)
+            self.logger.error("Error: " + str(error_ex))
+            result = False
+        else:
+            try:
+                self.connection.commit()
+            except (Exception, psycopg2.Error) as error_ex:
+                self.logger.error("Error on commit.")
+                self.logger.error("Error: " + str(error_ex))
+                self.connection.rollback()
+                result = False
+        finally:
+            cursor.close()
+
+        return result
+
+    def insert_workout_metadata(self, workout_metadata):
+        upsert_sql = "INSERT INTO public.hk_workout_metadata(" \
+                     "  workout_id," \
+                     "  meta_key," \
+                     "  meta_value" \
+                     ") VALUES %s " \
+                     "ON CONFLICT ON CONSTRAINT" \
+                     "  hk_workout_metadata_pkey " \
+                     "DO UPDATE " \
+                     "SET meta_value = EXCLUDED.meta_value;"
+
+        return self.insert_values(workout_metadata, upsert_sql)
+
+    def insert_workout_events(self, workout_events):
+        upsert_sql = "INSERT INTO public.hk_workout_event(" \
+                     "  workout_id," \
+                     "  event_type," \
+                     "  event_date," \
+                     "  duration," \
+                     "  duration_unit" \
+                     ") VALUES %s " \
+                     "ON CONFLICT ON CONSTRAINT" \
+                     "  hk_workout_event_unique " \
+                     "DO NOTHING;"
+
+        return self.insert_values(workout_events, upsert_sql)
