@@ -14,7 +14,7 @@ services:
       - "5432:5432"
     user: postgres
   graphs:
-    image: "grafana/grafana:8.1.1"
+    image: "grafana/grafana:8.1.5"
     restart: always
     volumes:
       - "./grafana/paths_data:/var/lib/grafana"
