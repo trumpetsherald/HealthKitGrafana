@@ -1,0 +1,653 @@
+import datetime
+import json
+import os
+import pathlib
+from healthkit_grafana import hkg_logger
+from influxdb_client import InfluxDBClient
+from influxdb_client.client.write_api import ASYNCHRONOUS
+from xml.dom import minidom
+
+LOGGER: hkg_logger = hkg_logger.LOGGER
+WRITE_API: InfluxDBClient.write_api = None
+INFLUX_BUCKET = None
+INFLUX_ORG = None
+
+EXPORT_DIR_PATH = os.environ.get(
+    'HKG_EXPORT_FILE_PATH',
+    '/opt/healthkit_grafana/apple_health_export')
+EXPORT_XML_PATH = EXPORT_DIR_PATH + "/export.xml"
+
+DEFAULT_PERSON_ID = 1
+STRIP_PREFIXES = [
+    'HKQuantityTypeIdentifier',
+    'HKCategoryTypeIdentifier'
+]
+
+LAB_TYPE_DIAGNOSTIC_REPORT = 'DiagnosticReport'
+LAB_SOURCE_LABCORP = 'labcorp'
+
+HKCategoryValueSleepAnalysisInBed = "HKCategoryValueSleepAnalysisInBed"
+HKCategoryValueSleepAnalysisAsleep = "HKCategoryValueSleepAnalysisAsleep"
+HKCategoryValueSleepAnalysisAwake = "HKCategoryValueSleepAnalysisAwake"
+HKCategoryValueAppleStandHourIdle = "HKCategoryValueAppleStandHourIdle"
+HKCategoryValueAppleStandHourStood = "HKCategoryValueAppleStandHourStood"
+HKCategoryValueHeadphoneAudioExposureEventSevenDayLimit = \
+    "HKCategoryValueHeadphoneAudioExposureEventSevenDayLimit"
+
+
+def check_for_files() -> bool:
+    result = True
+
+    if not os.path.isdir(EXPORT_DIR_PATH):
+        LOGGER.error("The EXPORT_DIR_PATH environment variable must point "
+                     "to a directory. Instead I have: %s" % EXPORT_DIR_PATH)
+        result = False
+
+    if not os.path.isfile(EXPORT_XML_PATH):
+        LOGGER.error("The export.xml file is either missing or not a file. "
+                     "Please ensure that the following exists and is a "
+                     "valid file: %s" % EXPORT_DIR_PATH)
+        result = False
+
+    return result
+
+
+def connect_to_db():
+    global WRITE_API, INFLUX_BUCKET, INFLUX_ORG
+    LOGGER.info("Connecting to Database.")
+
+    db_url, db_token, db_org, db_bucket = None, None, None, None
+
+    try:
+        db_url = os.environ['HKG_DB_URL']
+        db_token = os.environ['HKG_DB_TOKEN']
+        INFLUX_ORG = os.environ['HKG_DB_ORG']
+        INFLUX_BUCKET = os.environ['HKG_DB_BUCKET']
+    except KeyError as ke:
+        print("Required environment variable not found %s", ke)
+        exit(42)
+
+    client = InfluxDBClient(url=db_url,
+                            token=db_token,
+                            org=INFLUX_ORG)
+
+    if client.health().status == "pass":
+        WRITE_API = client.write_api(write_options=ASYNCHRONOUS)
+    else:
+        # todo fix message
+        LOGGER.error("Could not connect to database after 10 retries. "
+                     "Make sure the database is running and your credentials "
+                     "are correct.")
+        LOGGER.error("Export failed.")
+        exit(42)
+
+
+def parse_export_xml() -> []:
+    start = datetime.datetime.now()
+    LOGGER.info("Parsing export file.")
+
+    xml_doc = minidom.parse(EXPORT_XML_PATH)
+    me = xml_doc.getElementsByTagName('Me')
+    if me:
+        LOGGER.info("Me element found.")
+    else:
+        LOGGER.warning("No <Me> element found.")
+
+    records = xml_doc.getElementsByTagName('Record')
+    if records:
+        LOGGER.info("%s records found." % len(records))
+    else:
+        LOGGER.warning("No <Record> elements found.")
+
+    workouts = xml_doc.getElementsByTagName('Workout')
+    if workouts:
+        LOGGER.info("%s workouts found." % len(workouts))
+    else:
+        LOGGER.warning("No <Workout> elements found.")
+
+    activity_summaries = xml_doc.getElementsByTagName('ActivitySummary')
+    if activity_summaries:
+        LOGGER.info(
+            "%s activity_summaries found." % len(activity_summaries))
+    else:
+        LOGGER.warning("No <ActivitySummary> elements found.")
+
+    clinical_records = xml_doc.getElementsByTagName('ClinicalRecord')
+    if records:
+        LOGGER.info("%s clinical_records found." % len(clinical_records))
+    else:
+        LOGGER.warning("No <ClinicalRecord> elements found.")
+
+    read_done = datetime.datetime.now()
+    LOGGER.info("Reading export.xml took %s seconds." % (read_done - start))
+
+    return me, records, workouts, activity_summaries, clinical_records
+
+
+def get_quantity_records(xml_records):
+    result = []
+    duplicates = {}
+    dup_count = 0
+
+    for record in xml_records:
+        record_type = record.getAttribute('type')
+
+        if record_type.startswith("HKQuantityTypeIdentifier"):
+            value = record.getAttribute('value')
+            if not value:
+                value = 0.0
+
+            key = str(DEFAULT_PERSON_ID) + record_type + \
+                record.getAttribute('sourceName') + \
+                record.getAttribute('startDate') + \
+                record.getAttribute('endDate')
+
+            quantity_record = (
+                DEFAULT_PERSON_ID,
+                record_type,
+                record.getAttribute('sourceName'),
+                record.getAttribute('sourceVersion'),
+                record.getAttribute('device'),
+                record.getAttribute('creationDate'),
+                record.getAttribute('startDate'),
+                record.getAttribute('endDate'),
+                record.getAttribute('unit'),
+                value
+            )
+            if key not in duplicates:
+                duplicates[key] = []
+
+            duplicates[key].append(quantity_record)
+
+            if len(duplicates[key]) == 1:
+                result.append(quantity_record)
+            else:
+                dup_count += 1
+                LOGGER.debug("Found duplicate records: %s" % duplicates[key])
+
+    LOGGER.info("Found %s quantity records and %s duplicates."
+                % (len(result), dup_count))
+
+    return result
+
+
+def get_category_records(xml_records):
+    result = []
+    duplicates = {}
+    dup_count = 0
+
+    for record in xml_records:
+        record_type = record.getAttribute('type')
+
+        if record_type.startswith("HKCategoryTypeIdentifier"):
+            value = record.getAttribute('value')
+            if not value:
+                value = "Not Set"
+
+            # This is ugly but...
+            # My data has records where type, source, start, and end
+            # dates are all the same and the create date is seconds off
+            # Since I can only depend on those 4 items being present
+            # those are the unique constraints on the db. The other option
+            # (and this may be valid) is to do nothing on conflict vs update
+            # the other fields.
+            key = str(DEFAULT_PERSON_ID) + record_type + \
+                record.getAttribute('sourceName') + \
+                record.getAttribute('startDate') + \
+                record.getAttribute('endDate')
+
+            category_record = (
+                DEFAULT_PERSON_ID,
+                record_type,
+                record.getAttribute('sourceName'),
+                record.getAttribute('sourceVersion'),
+                record.getAttribute('device'),
+                record.getAttribute('creationDate'),
+                record.getAttribute('startDate'),
+                record.getAttribute('endDate'),
+                record.getAttribute('unit'),
+                value
+            )
+            if key not in duplicates:
+                duplicates[key] = []
+
+            duplicates[key].append(category_record)
+
+            if len(duplicates[key]) == 1:
+                result.append(category_record)
+            else:
+                dup_count += 1
+                LOGGER.debug("Found duplicate records: %s" % duplicates[key])
+
+    LOGGER.info("Found %s category records and %s duplicates." %
+                (len(result), dup_count))
+
+    return result
+
+
+def get_observations_from_report(report):
+    result = []
+    record_id = report['id']
+    missing_quantity = 0
+
+    for observation in report['contained']:
+        if 'valueString' in observation:
+            LOGGER.debug(
+                "Observation value is a string, skipping: %s" % observation)
+            continue
+
+        if 'valueQuantity' not in observation:
+            LOGGER.debug(
+                "Observation is missing a quantity, skipping: %s" % observation
+            )
+            missing_quantity += 1
+            continue
+
+        observation_id = observation['id']
+        observation_date = observation['effectiveDateTime']
+        code_display = None
+        coding_list = observation.get('code', []).get('coding')
+
+        if coding_list:
+            code_display = coding_list[0].get('display')
+
+        interpretation = None
+        coding_list = observation.get('interpretation', []).get('coding')
+
+        if coding_list:
+            interpretation = coding_list[0].get('code')
+
+        reference_range = observation.get('referenceRange', None)
+        reference_high, reference_low = None, None
+
+        if reference_range:
+            reference_high = reference_range[0].get('high', {}).get('value')
+            reference_low = reference_range[0].get('low', {}).get('value')
+
+        unit = observation['valueQuantity'].get('unit')
+        value = observation['valueQuantity']['value']
+
+        result.append(
+            (record_id, observation_id, observation_date, code_display,
+             interpretation, reference_high, reference_low, unit, value)
+        )
+
+    return result, missing_quantity
+
+
+#  This will return a clinical record tuple and a list of observation tuples
+def get_record_and_observations(report, hk_type, source_name, resource_path):
+    try:
+        report_id = report['id']
+        subject = report['subject']['reference']
+        effective_time = report['effectiveDateTime']
+    except KeyError as ke:
+        LOGGER.error("Couldn't get required fields for report.", ke)
+        return None, None
+
+    issue_time = report.get('issued', None)
+    category = report.get('category', {}).get('coding', [])[0].get('code')
+    panel = report.get('code', {}).get('text')
+    observations, missing_quantity_count = get_observations_from_report(report)
+
+    return (
+               report_id, subject, effective_time, issue_time, hk_type,
+               source_name, resource_path, category, panel
+           ), \
+        observations, \
+        missing_quantity_count
+
+
+def get_clinical_records_and_observations(clinical_records_xml):
+    records = []
+    all_observations = []
+    observations_missing_quantity = 0
+
+    for cr in clinical_records_xml:
+        record_id = cr.getAttribute('identifier')
+        hk_type = cr.getAttribute('type')
+        source_name = cr.getAttribute('sourceName')
+        resource_path = cr.getAttribute('resourceFilePath')
+
+        if not all([record_id, hk_type, source_name, resource_path]):
+            LOGGER.error("Required field missing, skipping record %s" % cr)
+            continue
+
+        if hk_type != LAB_TYPE_DIAGNOSTIC_REPORT:
+            LOGGER.warning("Currently only Diagnostic Reports are supported. "
+                           "Skipping record: %s" % cr)
+            continue
+
+        if source_name != LAB_SOURCE_LABCORP:
+            LOGGER.warn("I haven't tested against anything but "
+                        "LabCorp so currently I'm playing it "
+                        "safe and skipping record: %s" % cr)
+
+        file_path = EXPORT_DIR_PATH + resource_path
+        if not os.path.isfile(file_path):
+            LOGGER.error("Skipping clinical record: %s.\n"
+                         "I couldn't find the file resource at the "
+                         "indicated path %s. Please ensure this path "
+                         "is correct." % (cr, file_path))
+            continue
+
+        with open(file_path) as report_file:
+            report = json.load(report_file)
+            record, observations, missing_quantity_count = \
+                get_record_and_observations(
+                    report, hk_type, source_name, resource_path
+                )
+
+            if record and observations:
+                records.append(record)
+                all_observations.extend(observations)
+            else:
+                LOGGER.debug("Report or observations were null. "
+                             "Record: %s Observations: %s" %
+                             (report, observations))
+
+            observations_missing_quantity += missing_quantity_count
+
+    empty_reports = len(clinical_records_xml) - len(records)
+    if empty_reports > 0:
+        LOGGER.warning("%s Reports were empty. This is normal for "
+                       "records where all values are strings. It could "
+                       "also indicate parsing errors. Turn on debug for "
+                       "more details." % empty_reports)
+
+    if observations_missing_quantity > 0:
+        LOGGER.warning("%s Observations were missing a quantity value. "
+                       "This isn't necessarily a bad thing. Notes and "
+                       "corrections can cause this. Turn on debug for "
+                       "more details." % observations_missing_quantity)
+
+    return records, all_observations
+
+
+def import_me(me_xml):
+    LOGGER.debug(me_xml)
+
+
+def import_records(records_xml):
+    global WRITE_API
+    start = datetime.datetime.now()
+    LOGGER.info("Importing %s Record elements." % len(records_xml))
+    measurements = []
+
+    for record in records_xml:
+        if not all(
+            [
+                record.hasAttribute('type'),
+                record.hasAttribute('sourceName'),
+                record.hasAttribute('startDate'),
+                record.hasAttribute('endDate'),
+                record.hasAttribute('creationDate'),
+                record.hasAttribute('value')
+            ]
+        ):
+            LOGGER.error("Record %s was missing required fields." % str(record))
+            continue
+
+        measurement = record.getAttribute('type')
+
+        if measurement.startswith("HKQuantityTypeIdentifier"):
+            try:
+                value = float(record.getAttribute('value'))
+            except ValueError as ve:
+                value = 0.0
+        else:
+            continue
+
+        measurements.append(
+            {
+                "time": record.getAttribute('creationDate'),
+                "measurement": measurement,
+                "tags": {
+                    "sourceName": record.getAttribute('sourceName'),
+                    "startDate": record.getAttribute('startDate'),
+                    "endDate": record.getAttribute('endDate'),
+                },
+                "fields": {
+                    "value": value,
+                    "sourceVersion": record.getAttribute('sourceVersion'),
+                    "device": record.getAttribute('device'),
+                    "unit": record.getAttribute('unit')
+                }
+            }
+        )
+
+    # noinspection PyUnresolvedReferences
+    WRITE_API.write(INFLUX_BUCKET, INFLUX_ORG, measurements)
+
+    LOGGER.info(
+        "Importing Records took %s" % (datetime.datetime.now() - start))
+
+
+def import_workout_metadata(workout_id, metadata_xml):
+    metadata = []
+
+    if len(metadata_xml) == 0:
+        return
+
+    for m in metadata_xml:
+        meta_key = m.getAttribute('key')
+        meta_val = m.getAttribute('value')
+
+        if all([meta_key, meta_val]):
+            if meta_key == 'HKExternalUUID':
+                continue
+
+            metadata.append((workout_id, meta_key, meta_val))
+
+    DATABASE.insert_workout_metadata(metadata)
+
+
+def import_workout_events(workout_id, events_xml):
+    events = []
+
+    if len(events_xml) == 0:
+        return
+
+    for event in events_xml:
+        event_type = event.getAttribute('type')
+        event_date = event.getAttribute('date')
+        duration = event.getAttribute('duration')
+        duration_unit = event.getAttribute('durationUnit')
+
+        if len(duration) == 0:
+            duration = None
+
+        if all([event_type, event_date]):
+            events.append(
+                (workout_id, event_type, event_date, duration, duration_unit, )
+            )
+
+    DATABASE.insert_workout_events(events)
+
+
+def import_workouts(workouts_xml):
+    start = datetime.datetime.now()
+    LOGGER.info("Importing %s Workout elements." % len(workouts_xml))
+
+    for workout in workouts_xml:
+        workout_activity_type = workout.getAttribute('workoutActivityType')
+        duration = workout.getAttribute('duration')
+        duration_unit = workout.getAttribute('durationUnit')
+        total_distance = workout.getAttribute('totalDistance')
+        total_distance_unit = workout.getAttribute('totalDistanceUnit')
+        total_energy_burned = workout.getAttribute('totalEnergyBurned')
+        total_energy_burned_unit = workout.getAttribute('totalEnergyBurnedUnit')
+        source_name = workout.getAttribute('sourceName')
+        source_version = workout.getAttribute('sourceVersion')
+        # device = workout.getAttribute('device')
+        creation_date = workout.getAttribute('creationDate')
+        start_date = workout.getAttribute('startDate')
+        end_date = workout.getAttribute('endDate')
+        workout_metadata = workout.getElementsByTagName('MetadataEntry')
+        workout_events = workout.getElementsByTagName('WorkoutEvent')
+        workout_route = workout.getElementsByTagName('WorkoutRoute')
+
+        if not all([workout_activity_type, source_name, start_date, end_date]):
+            LOGGER.error(
+                "Required field missing, skipping workout %s" % workout)
+            continue
+
+        workout_id = DATABASE.insert_workout(
+            (workout_activity_type, duration, duration_unit,
+             total_distance, total_distance_unit,
+             total_energy_burned, total_energy_burned_unit,
+             source_name, source_version,
+             creation_date, start_date, end_date)
+        )
+
+        if workout_id:
+            import_workout_metadata(workout_id, workout_metadata)
+            import_workout_events(workout_id, workout_events)
+        else:
+            LOGGER.error("Couldn't get ID from inserting workout.")
+
+    LOGGER.info(
+        "Importing Workouts took %s" % (datetime.datetime.now() - start))
+
+
+def import_activity_summaries(summaries_xml):
+    start = datetime.datetime.now()
+    LOGGER.info("Importing %s Activity Summary elements." % len(summaries_xml))
+    summaries = []
+
+    for summary in summaries_xml:
+        summary_date = summary.getAttribute('dateComponents')
+
+        if not summary_date:
+            LOGGER.error("Date was null for summary: %s" % summary)
+            continue
+
+        active_energy_burned = summary.getAttribute('activeEnergyBurned')
+        active_energy_burned_goal = summary.getAttribute(
+            'activeEnergyBurnedGoal')
+        active_energy_burned_unit = summary.getAttribute(
+            'activeEnergyBurnedUnit')
+        apple_move_time = summary.getAttribute('appleMoveTime')
+        apple_move_time_goal = summary.getAttribute('appleMoveTimeGoal')
+        apple_exercise_time = summary.getAttribute('appleExerciseTime')
+        apple_exercise_time_goal = summary.getAttribute(
+            'appleExerciseTimeGoal')
+        apple_stand_hours = summary.getAttribute('appleStandHours')
+        apple_stand_hours_goal = summary.getAttribute('appleStandHoursGoal')
+
+        summaries.append(
+            (summary_date, active_energy_burned, active_energy_burned_goal,
+             active_energy_burned_unit, apple_move_time, apple_move_time_goal,
+             apple_exercise_time, apple_exercise_time_goal,
+             apple_stand_hours, apple_stand_hours_goal)
+        )
+
+    DATABASE.insert_activity_summaries(summaries)
+
+    end = datetime.datetime.now() - start
+    LOGGER.info("Importing Activity Summaries took %s seconds." % end)
+
+
+def remove_duplicate_clinical_records(clinical_records_xml):
+    LOGGER.info("Removing duplicate clinical records.")
+    id_record_map = {}
+    duplicates = []
+    skipped = 0
+    files_not_found = 0
+
+    for cr in clinical_records_xml:
+        # This should never be null
+        identifier = cr.getAttribute('identifier')
+
+        if identifier not in id_record_map:
+            id_record_map[identifier] = cr
+        else:
+            duplicates.append(cr)
+
+    clinical_path = EXPORT_DIR_PATH + "/clinical-records/"
+
+    if os.path.isdir(clinical_path):
+        duplicate_path = os.path.join(clinical_path, 'duplicates')
+
+        pathlib.Path(duplicate_path).mkdir(exist_ok=True)
+
+        for dup in duplicates:
+            file_path = dup.getAttribute('resourceFilePath')
+
+            current_path = os.path.join(
+                clinical_path, os.path.basename(file_path))
+            new_path = os.path.join(
+                duplicate_path, os.path.basename(file_path))
+
+            if not os.path.isfile(current_path):
+                skipped += 1
+                if os.path.isfile(new_path):
+                    LOGGER.debug(
+                        "%s was already moved into duplicates." % new_path)
+                else:
+                    LOGGER.error("No file found at %s to move to "
+                                 "duplicates." % current_path)
+                    files_not_found += 1
+                continue
+
+            os.rename(current_path, new_path)
+
+    LOGGER.info("Duplicate Clinical Records Detected: %s" % len(duplicates))
+    LOGGER.info("Duplicate Clinical Records Moved: %s" % (
+            len(duplicates) - skipped))
+    LOGGER.info("Duplicate Clinical Records Skipped: %s" % skipped)
+    LOGGER.info("Clinical Records Missing Files: %s" % files_not_found)
+
+    return id_record_map.values()
+
+
+def import_clinical_records(clinical_records_xml):
+    global DATABASE
+    start = datetime.datetime.now()
+    LOGGER.info("Importing %s Clinical Record (lab results) elements."
+                % len(clinical_records_xml))
+
+    records, observations = \
+        get_clinical_records_and_observations(clinical_records_xml)
+
+    DATABASE.insert_clinical_records(records)
+    DATABASE.insert_clinical_observations(observations)
+    end = datetime.datetime.now() - start
+    LOGGER.info("Importing Clinical Records took %s seconds." % end)
+
+
+def import_data():
+    start = datetime.datetime.now()
+    LOGGER.info("Starting Health Kit Grafana (Influx).")
+
+    if not check_for_files():
+        LOGGER.error("Export Failed. Check the logs for errors and try again.")
+        exit(42)
+
+    connect_to_db()
+    me, records, workouts, activity_summaries, \
+        clinical_records = None, None, None, None, None
+    # noinspection PyBroadException
+    try:
+        me, records, workouts, activity_summaries, \
+            clinical_records = parse_export_xml()
+    except Exception as ex:
+        LOGGER.error(
+            "Encountered the following error while parsing export.", ex)
+        LOGGER.error("Parsing of %s failed. Make sure it's a valid "
+                     "Apple HealthKit export and try again." % EXPORT_XML_PATH)
+        exit(42)
+
+    # import_me(me)
+    import_records(records)
+    # import_workouts(workouts)
+    # import_activity_summaries(activity_summaries)
+    # unique_records = remove_duplicate_clinical_records(clinical_records)
+    # import_clinical_records(unique_records)
+
+    end = datetime.datetime.now()
+    LOGGER.info("Exiting, everything took %s seconds." % (end - start))
+
+
+if __name__ == "__main__":
+    import_data()

@@ -1,6 +1,20 @@
 version: "3"
 services:
-  database:
+  influx2:
+    image: influxdb:2.0.9
+    restart: always
+    volumes:
+      - "./influx2/data:/var/lib/influxdb2:rw"
+    ports:
+      - "8086:8086"
+    environment:
+      - DOCKER_INFLUXDB_INIT_MODE=setup
+      - DOCKER_INFLUXDB_INIT_USERNAME=caduceus
+      - DOCKER_INFLUXDB_INIT_PASSWORD=Mariner-10
+      - DOCKER_INFLUXDB_INIT_ORG=HealthKitGrafana
+      - DOCKER_INFLUXDB_INIT_BUCKET=health_bucket
+      - DOCKER_INFLUXDB_INIT_ADMIN_TOKEN=3d95d28c-5282-4e18-b173-2329a8a74a0f
+  postgres10:
     image: postgres:10.16-alpine
     restart: always
     volumes:
@@ -14,7 +28,7 @@ services:
       - "5432:5432"
     user: postgres
   graphs:
-    image: "grafana/grafana:8.1.5"
+    image: "grafana/grafana:8.2.2"
     restart: always
     volumes:
       - "./grafana/paths_data:/var/lib/grafana"
@@ -24,4 +38,5 @@ services:
     ports:
       - "3000:3000"
     depends_on:
-      - database
+      - influx2
+      - postgres10

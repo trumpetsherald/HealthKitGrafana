@@ -3,7 +3,7 @@ apiVersion: 1
 datasources:
   - name: Health Kit
     type: postgres
-    url: database
+    url: postgres10
     database: health_kit_grafana
     user: caduceus
     secureJsonData:
