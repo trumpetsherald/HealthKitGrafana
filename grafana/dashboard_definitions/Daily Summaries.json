@@ -19,14 +19,13 @@
     ]
   },
   "editable": true,
-  "gnetId": null,
+  "fiscalYearStartMonth": 0,
   "graphTooltip": 0,
-  "id": 5,
   "links": [],
+  "liveNow": false,
   "panels": [
     {
       "collapsed": false,
-      "datasource": null,
       "gridPos": {
         "h": 1,
         "w": 24,
@@ -39,7 +38,10 @@
       "type": "row"
     },
     {
-      "datasource": "Health Kit",
+      "datasource": {
+        "type": "postgres",
+        "uid": "P1895DA3115ECF03F"
+      },
       "description": "",
       "fieldConfig": {
         "defaults": {
@@ -159,7 +161,8 @@
           "placement": "bottom"
         },
         "tooltip": {
-          "mode": "single"
+          "mode": "single",
+          "sort": "none"
         }
       },
       "targets": [
@@ -192,7 +195,10 @@
       "type": "timeseries"
     },
     {
-      "datasource": "Health Kit",
+      "datasource": {
+        "type": "postgres",
+        "uid": "P1895DA3115ECF03F"
+      },
       "description": "",
       "fieldConfig": {
         "defaults": {
@@ -288,7 +294,7 @@
         "text": {},
         "textMode": "auto"
       },
-      "pluginVersion": "8.1.1",
+      "pluginVersion": "8.4.5",
       "targets": [
         {
           "format": "table",
@@ -319,7 +325,10 @@
       "type": "stat"
     },
     {
-      "datasource": "Health Kit",
+      "datasource": {
+        "type": "postgres",
+        "uid": "P1895DA3115ECF03F"
+      },
       "description": "",
       "fieldConfig": {
         "defaults": {
@@ -439,7 +448,8 @@
           "placement": "bottom"
         },
         "tooltip": {
-          "mode": "single"
+          "mode": "single",
+          "sort": "none"
         }
       },
       "targets": [
@@ -472,7 +482,10 @@
       "type": "timeseries"
     },
     {
-      "datasource": "Health Kit",
+      "datasource": {
+        "type": "postgres",
+        "uid": "P1895DA3115ECF03F"
+      },
       "description": "",
       "fieldConfig": {
         "defaults": {
@@ -568,7 +581,7 @@
         "text": {},
         "textMode": "auto"
       },
-      "pluginVersion": "8.1.1",
+      "pluginVersion": "8.4.5",
       "targets": [
         {
           "format": "table",
@@ -599,7 +612,10 @@
       "type": "stat"
     },
     {
-      "datasource": "Health Kit",
+      "datasource": {
+        "type": "postgres",
+        "uid": "P1895DA3115ECF03F"
+      },
       "description": "",
       "fieldConfig": {
         "defaults": {
@@ -719,7 +735,8 @@
           "placement": "bottom"
         },
         "tooltip": {
-          "mode": "single"
+          "mode": "single",
+          "sort": "none"
         }
       },
       "targets": [
@@ -752,7 +769,10 @@
       "type": "timeseries"
     },
     {
-      "datasource": "Health Kit",
+      "datasource": {
+        "type": "postgres",
+        "uid": "P1895DA3115ECF03F"
+      },
       "description": "",
       "fieldConfig": {
         "defaults": {
@@ -848,7 +868,7 @@
         "text": {},
         "textMode": "auto"
       },
-      "pluginVersion": "8.1.1",
+      "pluginVersion": "8.4.5",
       "targets": [
         {
           "format": "table",
@@ -879,7 +899,10 @@
       "type": "stat"
     },
     {
-      "datasource": "Health Kit",
+      "datasource": {
+        "type": "postgres",
+        "uid": "P1895DA3115ECF03F"
+      },
       "description": "",
       "fieldConfig": {
         "defaults": {
@@ -892,6 +915,7 @@
             "lineWidth": 2
           },
           "mappings": [],
+          "noValue": "No Data",
           "thresholds": {
             "mode": "absolute",
             "steps": [
@@ -955,7 +979,8 @@
         "rowHeight": 0.9,
         "showValue": "never",
         "tooltip": {
-          "mode": "single"
+          "mode": "single",
+          "sort": "none"
         }
       },
       "pluginVersion": "8.1.1",
@@ -1013,7 +1038,10 @@
       "type": "status-history"
     },
     {
-      "datasource": "Health Kit",
+      "datasource": {
+        "type": "postgres",
+        "uid": "P1895DA3115ECF03F"
+      },
       "description": "",
       "fieldConfig": {
         "defaults": {
@@ -1109,7 +1137,7 @@
         "text": {},
         "textMode": "auto"
       },
-      "pluginVersion": "8.1.1",
+      "pluginVersion": "8.4.5",
       "targets": [
         {
           "format": "table",
@@ -1141,7 +1169,6 @@
     },
     {
       "collapsed": false,
-      "datasource": null,
       "gridPos": {
         "h": 1,
         "w": 24,
@@ -1154,7 +1181,10 @@
       "type": "row"
     },
     {
-      "datasource": "Health Kit",
+      "datasource": {
+        "type": "postgres",
+        "uid": "P1895DA3115ECF03F"
+      },
       "description": "",
       "fieldConfig": {
         "defaults": {
@@ -1214,14 +1244,18 @@
         "text": {},
         "textMode": "auto"
       },
-      "pluginVersion": "8.1.1",
+      "pluginVersion": "8.4.5",
       "targets": [
         {
+          "datasource": {
+            "type": "postgres",
+            "uid": "P1895DA3115ECF03F"
+          },
           "format": "time_series",
           "group": [],
           "metricColumn": "none",
           "rawQuery": true,
-          "rawSql": "SELECT\n  start_date as time,\n  hk_value as \"Body Mass\"\nFROM \n  public.hk_quantity_record\nWHERE\n  $__timeFilter(start_date)\nAND\n  hk_type = 'HKQuantityTypeIdentifierBodyMass'\nORDER BY time",
+          "rawSql": "SELECT\n  start_date as time,\n  hk_value as \"Body Mass\"\nFROM \n  public.hk_quantity_record\nWHERE\n  $__timeFilter(start_date)\nAND\n  hk_type = 'BodyMass'\nORDER BY time",
           "refId": "A",
           "select": [
             [
@@ -1243,12 +1277,16 @@
           ]
         },
         {
+          "datasource": {
+            "type": "postgres",
+            "uid": "P1895DA3115ECF03F"
+          },
           "format": "time_series",
           "group": [],
           "hide": false,
           "metricColumn": "none",
           "rawQuery": true,
-          "rawSql": "SELECT\n  start_date as time,\n  hk_value as \"Lean Body Mass\"\nFROM \n  public.hk_quantity_record\nWHERE\n  $__timeFilter(start_date)\nAND\n  hk_type = 'HKQuantityTypeIdentifierLeanBodyMass'\nORDER BY time",
+          "rawSql": "SELECT\n  start_date as time,\n  hk_value as \"Lean Body Mass\"\nFROM \n  public.hk_quantity_record\nWHERE\n  $__timeFilter(start_date)\nAND\n  hk_type = 'LeanBodyMass'\nORDER BY time",
           "refId": "B",
           "select": [
             [
@@ -1270,12 +1308,16 @@
           ]
         },
         {
+          "datasource": {
+            "type": "postgres",
+            "uid": "P1895DA3115ECF03F"
+          },
           "format": "time_series",
           "group": [],
           "hide": false,
           "metricColumn": "none",
           "rawQuery": true,
-          "rawSql": "SELECT\n  start_date as time,\n  hk_value as \"Body Fat %\"\nFROM \n  public.hk_quantity_record\nWHERE\n  $__timeFilter(start_date)\nAND\n  hk_type = 'HKQuantityTypeIdentifierBodyFatPercentage'\nORDER BY time",
+          "rawSql": "SELECT\n  start_date as time,\n  hk_value as \"Body Fat %\"\nFROM \n  public.hk_quantity_record\nWHERE\n  $__timeFilter(start_date)\nAND\n  hk_type = 'BodyFatPercentage'\nORDER BY time",
           "refId": "C",
           "select": [
             [
@@ -1299,12 +1341,13 @@
           ]
         }
       ],
-      "timeFrom": null,
-      "timeShift": null,
       "type": "stat"
     },
     {
-      "datasource": "Health Kit",
+      "datasource": {
+        "type": "postgres",
+        "uid": "P1895DA3115ECF03F"
+      },
       "description": "",
       "fieldConfig": {
         "defaults": {
@@ -1369,7 +1412,7 @@
         },
         "textMode": "auto"
       },
-      "pluginVersion": "8.1.1",
+      "pluginVersion": "8.4.5",
       "targets": [
         {
           "format": "time_series",
@@ -1405,7 +1448,10 @@
       "type": "stat"
     },
     {
-      "datasource": "Health Kit",
+      "datasource": {
+        "type": "postgres",
+        "uid": "P1895DA3115ECF03F"
+      },
       "description": "",
       "fieldConfig": {
         "defaults": {
@@ -1455,14 +1501,18 @@
         },
         "textMode": "auto"
       },
-      "pluginVersion": "8.1.1",
+      "pluginVersion": "8.4.5",
       "targets": [
         {
+          "datasource": {
+            "type": "postgres",
+            "uid": "P1895DA3115ECF03F"
+          },
           "format": "time_series",
           "group": [],
           "metricColumn": "none",
           "rawQuery": true,
-          "rawSql": "SELECT\n  $__timeGroupAlias(start_date, '1d', NULL),\n  sum(hk_value) as \"Exercise Time\"\nFROM \n  public.hk_quantity_record\nWHERE\n  $__timeFilter(start_date)\nAND\n  hk_type = 'HKQuantityTypeIdentifierAppleExerciseTime'\nAND\n  hk_source = 'Nathaniel’s Apple Watch'\nGROUP BY time\nORDER BY time",
+          "rawSql": "SELECT\n  $__timeGroupAlias(start_date, '1d', NULL),\n  sum(hk_value) as \"Exercise Time\"\nFROM \n  public.hk_quantity_record\nWHERE\n  $__timeFilter(start_date)\nAND\n  hk_type = 'AppleExerciseTime'\nAND\n  hk_source = 'Nathaniel’s Apple Watch'\nGROUP BY time\nORDER BY time",
           "refId": "A",
           "select": [
             [
@@ -1488,7 +1538,10 @@
       "type": "stat"
     },
     {
-      "datasource": "Health Kit",
+      "datasource": {
+        "type": "postgres",
+        "uid": "P1895DA3115ECF03F"
+      },
       "description": "",
       "fieldConfig": {
         "defaults": {
@@ -1567,16 +1620,21 @@
           "values": false
         },
         "tooltip": {
-          "mode": "single"
+          "mode": "single",
+          "sort": "none"
         }
       },
       "targets": [
         {
+          "datasource": {
+            "type": "postgres",
+            "uid": "P1895DA3115ECF03F"
+          },
           "format": "time_series",
           "group": [],
           "metricColumn": "none",
           "rawQuery": true,
-          "rawSql": "SELECT\n  $__timeGroupAlias(start_date, '1d', NULL),\n  sum(hk_value) as \"Resting\"\nFROM \n  public.hk_quantity_record\nWHERE\n  $__timeFilter(start_date)\nAND\n  hk_type = 'HKQuantityTypeIdentifierBasalEnergyBurned'\nAND\n  hk_source = 'Nathaniel’s Apple Watch'\nGROUP BY time\nORDER BY time",
+          "rawSql": "SELECT\n  $__timeGroupAlias(start_date, '1d', NULL),\n  sum(hk_value) as \"Resting\"\nFROM \n  public.hk_quantity_record\nWHERE\n  $__timeFilter(start_date)\nAND\n  hk_type = 'BasalEnergyBurned'\nAND\n  hk_source = 'Nathaniel’s Apple Watch'\nGROUP BY time\nORDER BY time",
           "refId": "A",
           "select": [
             [
@@ -1598,12 +1656,16 @@
           ]
         },
         {
+          "datasource": {
+            "type": "postgres",
+            "uid": "P1895DA3115ECF03F"
+          },
           "format": "time_series",
           "group": [],
           "hide": false,
           "metricColumn": "none",
           "rawQuery": true,
-          "rawSql": "SELECT\n  $__timeGroupAlias(start_date, '1d', NULL),\n  sum(hk_value) as \"Active\"\nFROM \n  public.hk_quantity_record\nWHERE\n  $__timeFilter(start_date)\nAND\n  hk_type = 'HKQuantityTypeIdentifierActiveEnergyBurned'\nAND\n  hk_source = 'Nathaniel’s Apple Watch'\nGROUP BY time\nORDER BY time",
+          "rawSql": "SELECT\n  $__timeGroupAlias(start_date, '1d', NULL),\n  sum(hk_value) as \"Active\"\nFROM \n  public.hk_quantity_record\nWHERE\n  $__timeFilter(start_date)\nAND\n  hk_type = 'ActiveEnergyBurned'\nAND\n  hk_source = 'Nathaniel’s Apple Watch'\nGROUP BY time\nORDER BY time",
           "refId": "B",
           "select": [
             [
@@ -1631,7 +1693,10 @@
       "type": "piechart"
     },
     {
-      "datasource": "Health Kit",
+      "datasource": {
+        "type": "postgres",
+        "uid": "P1895DA3115ECF03F"
+      },
       "description": "",
       "fieldConfig": {
         "defaults": {
@@ -1696,15 +1761,19 @@
         },
         "textMode": "auto"
       },
-      "pluginVersion": "8.1.1",
+      "pluginVersion": "8.4.5",
       "targets": [
         {
+          "datasource": {
+            "type": "postgres",
+            "uid": "P1895DA3115ECF03F"
+          },
           "format": "time_series",
           "group": [],
           "metricColumn": "none",
           "queryType": "randomWalk",
           "rawQuery": true,
-          "rawSql": "select\n  creation_date::date as time,\n  sum(hk_value) as \"Steps\"\nfrom hk_quantity_record \nwhere \n  $__timeFilter(start_date)\nAND\n  hk_type = 'HKQuantityTypeIdentifierStepCount'\nGROUP BY time\nORDER BY time",
+          "rawSql": "select\n  creation_date::date as time,\n  sum(hk_value) as \"Steps\"\nfrom hk_quantity_record \nwhere \n  $__timeFilter(start_date)\nAND\n  hk_type = 'StepCount'\nGROUP BY time\nORDER BY time",
           "refId": "A",
           "select": [
             [
@@ -1732,7 +1801,10 @@
       "type": "stat"
     },
     {
-      "datasource": "Health Kit",
+      "datasource": {
+        "type": "postgres",
+        "uid": "P1895DA3115ECF03F"
+      },
       "description": "",
       "fieldConfig": {
         "defaults": {
@@ -1798,15 +1870,19 @@
         },
         "textMode": "auto"
       },
-      "pluginVersion": "8.1.1",
+      "pluginVersion": "8.4.5",
       "targets": [
         {
+          "datasource": {
+            "type": "postgres",
+            "uid": "P1895DA3115ECF03F"
+          },
           "format": "time_series",
           "group": [],
           "metricColumn": "none",
           "queryType": "randomWalk",
           "rawQuery": true,
-          "rawSql": "select\n  creation_date::date as time,\n  sum(hk_value) as \"Flights Climbed\"\nfrom hk_quantity_record \nwhere \n  $__timeFilter(start_date)\nAND\n  hk_type = 'HKQuantityTypeIdentifierFlightsClimbed'\nGROUP BY time\nORDER BY time",
+          "rawSql": "select\n  creation_date::date as time,\n  sum(hk_value) as \"Flights Climbed\"\nfrom hk_quantity_record \nwhere \n  $__timeFilter(start_date)\nAND\n  hk_type = 'FlightsClimbed'\nGROUP BY time\nORDER BY time",
           "refId": "A",
           "select": [
             [
@@ -1834,7 +1910,10 @@
       "type": "stat"
     },
     {
-      "datasource": "Health Kit",
+      "datasource": {
+        "type": "postgres",
+        "uid": "P1895DA3115ECF03F"
+      },
       "description": "",
       "fieldConfig": {
         "defaults": {
@@ -1899,15 +1978,19 @@
         },
         "textMode": "auto"
       },
-      "pluginVersion": "8.1.1",
+      "pluginVersion": "8.4.5",
       "targets": [
         {
+          "datasource": {
+            "type": "postgres",
+            "uid": "P1895DA3115ECF03F"
+          },
           "format": "time_series",
           "group": [],
           "metricColumn": "none",
           "queryType": "randomWalk",
           "rawQuery": true,
-          "rawSql": "select\n  creation_date::date as time,\n  sum(hk_value) as \"Distance\"\nfrom hk_quantity_record \nwhere \n  $__timeFilter(start_date)\nAND\n  hk_type = 'HKQuantityTypeIdentifierDistanceWalkingRunning'\nGROUP BY time\nORDER BY time",
+          "rawSql": "select\n  creation_date::date as time,\n  sum(hk_value) as \"Distance\"\nfrom hk_quantity_record \nwhere \n  $__timeFilter(start_date)\nAND\n  hk_type = 'DistanceWalkingRunning'\nGROUP BY time\nORDER BY time",
           "refId": "A",
           "select": [
             [
@@ -1935,7 +2018,10 @@
       "type": "stat"
     },
     {
-      "datasource": "Health Kit",
+      "datasource": {
+        "type": "postgres",
+        "uid": "P1895DA3115ECF03F"
+      },
       "description": "",
       "fieldConfig": {
         "defaults": {
@@ -1985,14 +2071,18 @@
         },
         "textMode": "auto"
       },
-      "pluginVersion": "8.1.1",
+      "pluginVersion": "8.4.5",
       "targets": [
         {
+          "datasource": {
+            "type": "postgres",
+            "uid": "P1895DA3115ECF03F"
+          },
           "format": "time_series",
           "group": [],
           "metricColumn": "none",
           "rawQuery": true,
-          "rawSql": "SELECT\n  $__timeGroupAlias(start_date, '1d', NULL),\n  sum(hk_value) as \"Stand Time\"\nFROM \n  public.hk_quantity_record\nWHERE\n  $__timeFilter(start_date)\nAND\n  hk_type = 'HKQuantityTypeIdentifierAppleStandTime'\nAND\n  hk_source = 'Nathaniel’s Apple Watch'\nGROUP BY time\nORDER BY time",
+          "rawSql": "SELECT\n  $__timeGroupAlias(start_date, '1d', NULL),\n  sum(hk_value) as \"Stand Time\"\nFROM \n  public.hk_quantity_record\nWHERE\n  $__timeFilter(start_date)\nAND\n  hk_type = 'AppleStandTime'\nAND\n  hk_source = 'Nathaniel’s Apple Watch'\nGROUP BY time\nORDER BY time",
           "refId": "A",
           "select": [
             [
@@ -2018,7 +2108,10 @@
       "type": "stat"
     },
     {
-      "datasource": "Health Kit",
+      "datasource": {
+        "type": "postgres",
+        "uid": "P1895DA3115ECF03F"
+      },
       "description": "",
       "fieldConfig": {
         "defaults": {
@@ -2070,7 +2163,7 @@
         },
         "textMode": "auto"
       },
-      "pluginVersion": "8.1.1",
+      "pluginVersion": "8.4.5",
       "targets": [
         {
           "format": "time_series",
@@ -2102,13 +2195,11 @@
           ]
         }
       ],
-      "timeFrom": null,
-      "timeShift": null,
       "title": "... stand hours per day?",
       "type": "stat"
     }
   ],
-  "schemaVersion": 30,
+  "schemaVersion": 35,
   "style": "dark",
   "tags": [],
   "templating": {
@@ -2122,5 +2213,6 @@
   "timezone": "",
   "title": "Daily Summaries",
   "uid": "HGFcy3G7z",
-  "version": 8
+  "version": 1,
+  "weekStart": ""
 }

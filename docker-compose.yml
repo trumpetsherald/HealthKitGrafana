@@ -1,7 +1,7 @@
 version: "3"
 services:
   database:
-    image: postgres:10.16-alpine
+    image: postgres:10.20-alpine
     restart: always
     volumes:
       - "./postgres/pg_data:/var/lib/postgresql/data"
@@ -12,9 +12,9 @@ services:
       POSTGRES_PASSWORD: Mariner-10
     ports:
       - "5432:5432"
-    user: postgres
+#    user: postgres
   graphs:
-    image: "grafana/grafana:8.1.5"
+    image: "grafana/grafana:8.4.5"
     restart: always
     volumes:
       - "./grafana/paths_data:/var/lib/grafana"

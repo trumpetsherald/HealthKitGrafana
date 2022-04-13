@@ -15,10 +15,9 @@ EXPORT_DIR_PATH = os.environ.get(
 EXPORT_XML_PATH = EXPORT_DIR_PATH + "/export.xml"
 
 DEFAULT_PERSON_ID = 1
-STRIP_PREFIXES = [
-    'HKQuantityTypeIdentifier',
-    'HKCategoryTypeIdentifier'
-]
+QUANTITY_PREFIX = 'HKQuantityTypeIdentifier'
+CATEGORY_PREFIX = 'HKCategoryTypeIdentifier'
+WORKOUT_TYPE_PREFIX = "HKWorkoutActivityType"
 
 LAB_TYPE_DIAGNOSTIC_REPORT = 'DiagnosticReport'
 LAB_SOURCE_LABCORP = 'labcorp'
@@ -127,7 +126,8 @@ def get_quantity_records(xml_records):
     for record in xml_records:
         record_type = record.getAttribute('type')
 
-        if record_type.startswith("HKQuantityTypeIdentifier"):
+        if record_type.startswith(QUANTITY_PREFIX):
+            record_type = record_type.removeprefix(QUANTITY_PREFIX)
             value = record.getAttribute('value')
             if not value:
                 value = 0.0
@@ -423,7 +423,8 @@ def import_workouts(workouts_xml):
     LOGGER.info("Importing %s Workout elements." % len(workouts_xml))
 
     for workout in workouts_xml:
-        workout_activity_type = workout.getAttribute('workoutActivityType')
+        workout_activity_type = workout.getAttribute(
+            'workoutActivityType').removeprefix(WORKOUT_TYPE_PREFIX)
         duration = workout.getAttribute('duration')
         duration_unit = workout.getAttribute('durationUnit')
         total_distance = workout.getAttribute('totalDistance')
