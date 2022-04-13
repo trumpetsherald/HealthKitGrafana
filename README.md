@@ -25,9 +25,12 @@ and place the export.xml file into the apple_health_export directory of this rep
 
 ## Screenshots
 You can see daily summaries of metrics collected via iPhone
-![summaries1](./docs/daily_summaries_1.png)
+![daily_summaries1](./docs/daily_summaries.png)
 
-![summaries2](./docs/daily_summaries_2.png)
+There's a daily details view if you want to drilldown.
+![daily_details_1](./docs/daily_details_1.jpg)
+![daily_details_2](./docs/daily_details_2.jpg)
+![daily_details_3](./docs/daily_details_3.jpg)
 
 I'm not happy with this but it's good enough till inspiration hits
 ![activity](./docs/activity.png)
@@ -62,10 +65,11 @@ Things I plan to change very soon.
 * Import the Me xml element into the hk_person table
   * This means linking hk_person's to hk_records
   * Also means writing code to handle export_cda.xml
-* Import Workout elements
+* ~~Import Workout elements~~
 * ~~Import Lab Results~~
 * Clean up lab import code
 * More dashboards
+  * Next is a monthly summary
 * Consider if using pydantic would save time/code
 
 ## Helpful Links

@@ -21,6 +21,7 @@
   "editable": true,
   "fiscalYearStartMonth": 0,
   "graphTooltip": 0,
+  "id": 7,
   "links": [],
   "liveNow": false,
   "panels": [
@@ -36,163 +37,6 @@
       "panels": [],
       "title": "Apple Activity Rings",
       "type": "row"
-    },
-    {
-      "datasource": {
-        "type": "postgres",
-        "uid": "P1895DA3115ECF03F"
-      },
-      "description": "",
-      "fieldConfig": {
-        "defaults": {
-          "color": {
-            "mode": "continuous-reds"
-          },
-          "custom": {
-            "axisLabel": "",
-            "axisPlacement": "auto",
-            "barAlignment": 0,
-            "drawStyle": "bars",
-            "fillOpacity": 50,
-            "gradientMode": "opacity",
-            "hideFrom": {
-              "legend": false,
-              "tooltip": false,
-              "viz": false
-            },
-            "lineInterpolation": "linear",
-            "lineWidth": 2,
-            "pointSize": 5,
-            "scaleDistribution": {
-              "type": "linear"
-            },
-            "showPoints": "auto",
-            "spanNulls": false,
-            "stacking": {
-              "group": "A",
-              "mode": "none"
-            },
-            "thresholdsStyle": {
-              "mode": "off"
-            }
-          },
-          "mappings": [],
-          "thresholds": {
-            "mode": "absolute",
-            "steps": [
-              {
-                "color": "red",
-                "value": null
-              },
-              {
-                "color": "blue",
-                "value": 80
-              }
-            ]
-          },
-          "unit": "cal"
-        },
-        "overrides": [
-          {
-            "matcher": {
-              "id": "byName",
-              "options": "Goal"
-            },
-            "properties": [
-              {
-                "id": "custom.drawStyle",
-                "value": "line"
-              },
-              {
-                "id": "custom.showPoints",
-                "value": "never"
-              },
-              {
-                "id": "color",
-                "value": {
-                  "fixedColor": "red",
-                  "mode": "fixed"
-                }
-              },
-              {
-                "id": "custom.fillOpacity",
-                "value": 0
-              },
-              {
-                "id": "custom.lineStyle",
-                "value": {
-                  "dash": [
-                    10,
-                    10
-                  ],
-                  "fill": "dash"
-                }
-              }
-            ]
-          },
-          {
-            "matcher": {
-              "id": "byName",
-              "options": "Active Energy Burned"
-            },
-            "properties": [
-              {
-                "id": "color",
-                "value": {
-                  "fixedColor": "red",
-                  "mode": "fixed"
-                }
-              }
-            ]
-          }
-        ]
-      },
-      "gridPos": {
-        "h": 5,
-        "w": 16,
-        "x": 0,
-        "y": 1
-      },
-      "id": 2,
-      "options": {
-        "legend": {
-          "calcs": [],
-          "displayMode": "hidden",
-          "placement": "bottom"
-        },
-        "tooltip": {
-          "mode": "single",
-          "sort": "none"
-        }
-      },
-      "targets": [
-        {
-          "format": "time_series",
-          "group": [],
-          "metricColumn": "none",
-          "queryType": "randomWalk",
-          "rawQuery": true,
-          "rawSql": "SELECT\n  summary_date AS \"time\",\n  active_energy_burned as \"Active Energy Burned\",\n  active_energy_burned_goal as \"Goal\"\nFROM hk_activity_summary\nWHERE\n  $__timeFilter(summary_date)\nORDER BY 1",
-          "refId": "A",
-          "select": [
-            [
-              {
-                "params": [
-                  "active_energy_burned"
-                ],
-                "type": "column"
-              }
-            ]
-          ],
-          "table": "hk_activity_summary",
-          "timeColumn": "observation_date",
-          "timeColumnType": "timestamp",
-          "where": []
-        }
-      ],
-      "title": "When did I meet my Move goals?",
-      "transformations": [],
-      "type": "timeseries"
     },
     {
       "datasource": {
@@ -273,9 +117,9 @@
         ]
       },
       "gridPos": {
-        "h": 5,
-        "w": 8,
-        "x": 16,
+        "h": 3,
+        "w": 6,
+        "x": 0,
         "y": 1
       },
       "id": 6,
@@ -297,12 +141,16 @@
       "pluginVersion": "8.4.5",
       "targets": [
         {
+          "datasource": {
+            "type": "postgres",
+            "uid": "P1895DA3115ECF03F"
+          },
           "format": "table",
           "group": [],
           "metricColumn": "none",
           "queryType": "randomWalk",
           "rawQuery": true,
-          "rawSql": "SELECT \n  goal_met_days as \"Met Goal\",\n  total_days as \"Total Days\",\n  goal_met_days / total_days as \"Achievment Rate\"\nFROM (\n  SELECT\n    count(summary_date) as goal_met_days,\n    DATE_PART('day', \n                 to_timestamp('${__to:date:seconds}')  - \n                 to_timestamp('${__from:date:seconds}')\n      ) as total_days\n  FROM\n    hk_activity_summary\n  WHERE\n    $__timeFilter(summary_date)\n  AND\n    active_energy_burned >= active_energy_burned_goal\n  ORDER BY 1\n) n1",
+          "rawSql": "SELECT \n  --goal_met_days as \"Met Goal\",\n  --total_days as \"Total Days\",\n  goal_met_days / total_days as \"Achievment Rate\"\nFROM (\n  SELECT\n    count(summary_date) as goal_met_days,\n    DATE_PART('day', \n                 to_timestamp('${__to:date:seconds}')  - \n                 to_timestamp('${__from:date:seconds}')\n      ) as total_days\n  FROM\n    hk_activity_summary\n  WHERE\n    $__timeFilter(summary_date)\n  AND\n    active_energy_burned >= active_energy_burned_goal\n  ORDER BY 1\n) n1",
           "refId": "A",
           "select": [
             [
@@ -333,163 +181,6 @@
       "fieldConfig": {
         "defaults": {
           "color": {
-            "mode": "continuous-reds"
-          },
-          "custom": {
-            "axisLabel": "",
-            "axisPlacement": "auto",
-            "barAlignment": 0,
-            "drawStyle": "bars",
-            "fillOpacity": 50,
-            "gradientMode": "opacity",
-            "hideFrom": {
-              "legend": false,
-              "tooltip": false,
-              "viz": false
-            },
-            "lineInterpolation": "linear",
-            "lineWidth": 2,
-            "pointSize": 5,
-            "scaleDistribution": {
-              "type": "linear"
-            },
-            "showPoints": "auto",
-            "spanNulls": false,
-            "stacking": {
-              "group": "A",
-              "mode": "none"
-            },
-            "thresholdsStyle": {
-              "mode": "off"
-            }
-          },
-          "mappings": [],
-          "thresholds": {
-            "mode": "absolute",
-            "steps": [
-              {
-                "color": "red",
-                "value": null
-              },
-              {
-                "color": "blue",
-                "value": 80
-              }
-            ]
-          },
-          "unit": "min"
-        },
-        "overrides": [
-          {
-            "matcher": {
-              "id": "byName",
-              "options": "Goal"
-            },
-            "properties": [
-              {
-                "id": "custom.drawStyle",
-                "value": "line"
-              },
-              {
-                "id": "custom.showPoints",
-                "value": "never"
-              },
-              {
-                "id": "color",
-                "value": {
-                  "fixedColor": "green",
-                  "mode": "fixed"
-                }
-              },
-              {
-                "id": "custom.fillOpacity",
-                "value": 0
-              },
-              {
-                "id": "custom.lineStyle",
-                "value": {
-                  "dash": [
-                    10,
-                    10
-                  ],
-                  "fill": "dash"
-                }
-              }
-            ]
-          },
-          {
-            "matcher": {
-              "id": "byName",
-              "options": "Exercise Time"
-            },
-            "properties": [
-              {
-                "id": "color",
-                "value": {
-                  "fixedColor": "green",
-                  "mode": "fixed"
-                }
-              }
-            ]
-          }
-        ]
-      },
-      "gridPos": {
-        "h": 5,
-        "w": 16,
-        "x": 0,
-        "y": 6
-      },
-      "id": 4,
-      "options": {
-        "legend": {
-          "calcs": [],
-          "displayMode": "hidden",
-          "placement": "bottom"
-        },
-        "tooltip": {
-          "mode": "single",
-          "sort": "none"
-        }
-      },
-      "targets": [
-        {
-          "format": "time_series",
-          "group": [],
-          "metricColumn": "none",
-          "queryType": "randomWalk",
-          "rawQuery": true,
-          "rawSql": "SELECT\n  summary_date AS \"time\",\n  apple_exercise_time as \"Exercise Time\",\n  apple_exercise_time_goal as \"Goal\"\nFROM hk_activity_summary\nWHERE\n  $__timeFilter(summary_date)\nORDER BY 1",
-          "refId": "A",
-          "select": [
-            [
-              {
-                "params": [
-                  "active_energy_burned"
-                ],
-                "type": "column"
-              }
-            ]
-          ],
-          "table": "hk_activity_summary",
-          "timeColumn": "observation_date",
-          "timeColumnType": "timestamp",
-          "where": []
-        }
-      ],
-      "title": "Do I meet my Exercise goals?",
-      "transformations": [],
-      "type": "timeseries"
-    },
-    {
-      "datasource": {
-        "type": "postgres",
-        "uid": "P1895DA3115ECF03F"
-      },
-      "description": "",
-      "fieldConfig": {
-        "defaults": {
-          "color": {
             "mode": "thresholds"
           },
           "mappings": [],
@@ -560,10 +251,10 @@
         ]
       },
       "gridPos": {
-        "h": 5,
-        "w": 8,
-        "x": 16,
-        "y": 6
+        "h": 3,
+        "w": 6,
+        "x": 6,
+        "y": 1
       },
       "id": 10,
       "options": {
@@ -584,12 +275,16 @@
       "pluginVersion": "8.4.5",
       "targets": [
         {
+          "datasource": {
+            "type": "postgres",
+            "uid": "P1895DA3115ECF03F"
+          },
           "format": "table",
           "group": [],
           "metricColumn": "none",
           "queryType": "randomWalk",
           "rawQuery": true,
-          "rawSql": "SELECT \n  goal_met_days as \"Met Goal\",\n  total_days as \"Total Days\",\n  goal_met_days / total_days as \"Achievment Rate\"\nFROM (\n  SELECT\n    count(summary_date) as goal_met_days,\n    DATE_PART('day', \n                 to_timestamp('${__to:date:seconds}')  - \n                 to_timestamp('${__from:date:seconds}')\n      ) as total_days\n  FROM\n    hk_activity_summary\n  WHERE\n    $__timeFilter(summary_date)\n  AND\n    apple_exercise_time >= apple_exercise_time_goal\n  ORDER BY 1\n) n1",
+          "rawSql": "SELECT \n--  goal_met_days as \"Met Goal\",\n--  total_days as \"Total Days\",\n  goal_met_days / total_days as \"Achievment Rate\"\nFROM (\n  SELECT\n    count(summary_date) as goal_met_days,\n    DATE_PART('day', \n                 to_timestamp('${__to:date:seconds}')  - \n                 to_timestamp('${__from:date:seconds}')\n      ) as total_days\n  FROM\n    hk_activity_summary\n  WHERE\n    $__timeFilter(summary_date)\n  AND\n    apple_exercise_time >= apple_exercise_time_goal\n  ORDER BY 1\n) n1",
           "refId": "A",
           "select": [
             [
@@ -620,163 +315,6 @@
       "fieldConfig": {
         "defaults": {
           "color": {
-            "mode": "continuous-reds"
-          },
-          "custom": {
-            "axisLabel": "",
-            "axisPlacement": "auto",
-            "barAlignment": 0,
-            "drawStyle": "bars",
-            "fillOpacity": 50,
-            "gradientMode": "opacity",
-            "hideFrom": {
-              "legend": false,
-              "tooltip": false,
-              "viz": false
-            },
-            "lineInterpolation": "linear",
-            "lineWidth": 2,
-            "pointSize": 5,
-            "scaleDistribution": {
-              "type": "linear"
-            },
-            "showPoints": "auto",
-            "spanNulls": false,
-            "stacking": {
-              "group": "A",
-              "mode": "none"
-            },
-            "thresholdsStyle": {
-              "mode": "off"
-            }
-          },
-          "mappings": [],
-          "thresholds": {
-            "mode": "absolute",
-            "steps": [
-              {
-                "color": "red",
-                "value": null
-              },
-              {
-                "color": "blue",
-                "value": 80
-              }
-            ]
-          },
-          "unit": "hrs"
-        },
-        "overrides": [
-          {
-            "matcher": {
-              "id": "byName",
-              "options": "Goal"
-            },
-            "properties": [
-              {
-                "id": "custom.drawStyle",
-                "value": "line"
-              },
-              {
-                "id": "custom.showPoints",
-                "value": "never"
-              },
-              {
-                "id": "color",
-                "value": {
-                  "fixedColor": "blue",
-                  "mode": "fixed"
-                }
-              },
-              {
-                "id": "custom.fillOpacity",
-                "value": 0
-              },
-              {
-                "id": "custom.lineStyle",
-                "value": {
-                  "dash": [
-                    10,
-                    10
-                  ],
-                  "fill": "dash"
-                }
-              }
-            ]
-          },
-          {
-            "matcher": {
-              "id": "byName",
-              "options": "Stand Hours"
-            },
-            "properties": [
-              {
-                "id": "color",
-                "value": {
-                  "fixedColor": "blue",
-                  "mode": "fixed"
-                }
-              }
-            ]
-          }
-        ]
-      },
-      "gridPos": {
-        "h": 5,
-        "w": 16,
-        "x": 0,
-        "y": 11
-      },
-      "id": 3,
-      "options": {
-        "legend": {
-          "calcs": [],
-          "displayMode": "hidden",
-          "placement": "bottom"
-        },
-        "tooltip": {
-          "mode": "single",
-          "sort": "none"
-        }
-      },
-      "targets": [
-        {
-          "format": "time_series",
-          "group": [],
-          "metricColumn": "none",
-          "queryType": "randomWalk",
-          "rawQuery": true,
-          "rawSql": "SELECT\n  summary_date AS \"time\",\n  apple_stand_hours as \"Stand Hours\",\n  apple_stand_hours_goal as \"Goal\"\nFROM hk_activity_summary\nWHERE\n  $__timeFilter(summary_date)\nORDER BY 1",
-          "refId": "A",
-          "select": [
-            [
-              {
-                "params": [
-                  "active_energy_burned"
-                ],
-                "type": "column"
-              }
-            ]
-          ],
-          "table": "hk_activity_summary",
-          "timeColumn": "observation_date",
-          "timeColumnType": "timestamp",
-          "where": []
-        }
-      ],
-      "title": "Do I meet my Stand goals?",
-      "transformations": [],
-      "type": "timeseries"
-    },
-    {
-      "datasource": {
-        "type": "postgres",
-        "uid": "P1895DA3115ECF03F"
-      },
-      "description": "",
-      "fieldConfig": {
-        "defaults": {
-          "color": {
             "mode": "thresholds"
           },
           "mappings": [],
@@ -847,10 +385,10 @@
         ]
       },
       "gridPos": {
-        "h": 5,
-        "w": 8,
-        "x": 16,
-        "y": 11
+        "h": 3,
+        "w": 6,
+        "x": 12,
+        "y": 1
       },
       "id": 11,
       "options": {
@@ -871,12 +409,16 @@
       "pluginVersion": "8.4.5",
       "targets": [
         {
+          "datasource": {
+            "type": "postgres",
+            "uid": "P1895DA3115ECF03F"
+          },
           "format": "table",
           "group": [],
           "metricColumn": "none",
           "queryType": "randomWalk",
           "rawQuery": true,
-          "rawSql": "SELECT \n  goal_met_days as \"Met Goal\",\n  total_days as \"Total Days\",\n  goal_met_days / total_days as \"Achievment Rate\"\nFROM (\n  SELECT\n    count(summary_date) as goal_met_days,\n    DATE_PART('day', \n                 to_timestamp('${__to:date:seconds}')  - \n                 to_timestamp('${__from:date:seconds}')\n      ) as total_days\n  FROM\n    hk_activity_summary\n  WHERE\n    $__timeFilter(summary_date)\n  AND\n    apple_stand_hours >= apple_stand_hours_goal\n  ORDER BY 1\n) n1",
+          "rawSql": "SELECT \n--  goal_met_days as \"Met Goal\",\n--  total_days as \"Total Days\",\n  goal_met_days / total_days as \"Achievment Rate\"\nFROM (\n  SELECT\n    count(summary_date) as goal_met_days,\n    DATE_PART('day', \n                 to_timestamp('${__to:date:seconds}')  - \n                 to_timestamp('${__from:date:seconds}')\n      ) as total_days\n  FROM\n    hk_activity_summary\n  WHERE\n    $__timeFilter(summary_date)\n  AND\n    apple_stand_hours >= apple_stand_hours_goal\n  ORDER BY 1\n) n1",
           "refId": "A",
           "select": [
             [
@@ -897,145 +439,6 @@
       "title": "How often do I meet my stand goal?",
       "transformations": [],
       "type": "stat"
-    },
-    {
-      "datasource": {
-        "type": "postgres",
-        "uid": "P1895DA3115ECF03F"
-      },
-      "description": "",
-      "fieldConfig": {
-        "defaults": {
-          "color": {
-            "fixedColor": "dark-purple",
-            "mode": "palette-classic"
-          },
-          "custom": {
-            "fillOpacity": 50,
-            "lineWidth": 2
-          },
-          "mappings": [],
-          "noValue": "No Data",
-          "thresholds": {
-            "mode": "absolute",
-            "steps": [
-              {
-                "color": "red",
-                "value": null
-              },
-              {
-                "color": "blue",
-                "value": 80
-              }
-            ]
-          }
-        },
-        "overrides": [
-          {
-            "matcher": {
-              "id": "byName",
-              "options": "All Goals Met"
-            },
-            "properties": [
-              {
-                "id": "color",
-                "value": {
-                  "fixedColor": "dark-purple",
-                  "mode": "fixed"
-                }
-              }
-            ]
-          },
-          {
-            "matcher": {
-              "id": "byName",
-              "options": "Goals Not Met"
-            },
-            "properties": [
-              {
-                "id": "color",
-                "value": {
-                  "fixedColor": "yellow",
-                  "mode": "fixed"
-                }
-              }
-            ]
-          }
-        ]
-      },
-      "gridPos": {
-        "h": 5,
-        "w": 16,
-        "x": 0,
-        "y": 16
-      },
-      "id": 5,
-      "options": {
-        "colWidth": 0.9,
-        "legend": {
-          "displayMode": "hidden",
-          "placement": "bottom"
-        },
-        "rowHeight": 0.9,
-        "showValue": "never",
-        "tooltip": {
-          "mode": "single",
-          "sort": "none"
-        }
-      },
-      "pluginVersion": "8.1.1",
-      "targets": [
-        {
-          "format": "time_series",
-          "group": [],
-          "metricColumn": "none",
-          "queryType": "randomWalk",
-          "rawQuery": true,
-          "rawSql": "SELECT\n  --to_char(summary_date, 'Day') AS \"day\",\n  summary_date as \"time\",\n  -- 1 as \"All Goals Met\"\n  to_char(summary_date, 'Day') AS \"All Goals Met\"\nFROM hk_activity_summary\nWHERE\n  $__timeFilter(summary_date)\nAND\n  active_energy_burned >= active_energy_burned_goal\nAND\n  apple_exercise_time >= apple_exercise_time_goal\nAND \n  apple_stand_hours >= apple_stand_hours_goal\nORDER BY 1",
-          "refId": "A",
-          "select": [
-            [
-              {
-                "params": [
-                  "active_energy_burned"
-                ],
-                "type": "column"
-              }
-            ]
-          ],
-          "table": "hk_activity_summary",
-          "timeColumn": "observation_date",
-          "timeColumnType": "timestamp",
-          "where": []
-        },
-        {
-          "format": "time_series",
-          "group": [],
-          "hide": false,
-          "metricColumn": "none",
-          "queryType": "randomWalk",
-          "rawQuery": true,
-          "rawSql": "SELECT\n  --to_char(summary_date, 'Day') AS \"day\",\n  summary_date as \"time\",\n  -- 1 as \"All Goals Met\"\n  to_char(summary_date, 'Day') AS \"Goals Not Met\"\nFROM hk_activity_summary\nWHERE\n  $__timeFilter(summary_date)\nAND (\n  active_energy_burned < active_energy_burned_goal\n  OR\n  apple_exercise_time < apple_exercise_time_goal\n  OR \n  apple_stand_hours < apple_stand_hours_goal\n)\nORDER BY 1",
-          "refId": "B",
-          "select": [
-            [
-              {
-                "params": [
-                  "active_energy_burned"
-                ],
-                "type": "column"
-              }
-            ]
-          ],
-          "table": "hk_activity_summary",
-          "timeColumn": "observation_date",
-          "timeColumnType": "timestamp",
-          "where": []
-        }
-      ],
-      "title": "How often do I close all my rings?",
-      "transformations": [],
-      "type": "status-history"
     },
     {
       "datasource": {
@@ -1116,10 +519,10 @@
         ]
       },
       "gridPos": {
-        "h": 5,
-        "w": 8,
-        "x": 16,
-        "y": 16
+        "h": 3,
+        "w": 6,
+        "x": 18,
+        "y": 1
       },
       "id": 12,
       "options": {
@@ -1140,12 +543,16 @@
       "pluginVersion": "8.4.5",
       "targets": [
         {
+          "datasource": {
+            "type": "postgres",
+            "uid": "P1895DA3115ECF03F"
+          },
           "format": "table",
           "group": [],
           "metricColumn": "none",
           "queryType": "randomWalk",
           "rawQuery": true,
-          "rawSql": "SELECT \n  goal_met_days as \"Met Goal\",\n  total_days as \"Total Days\",\n  goal_met_days / total_days as \"Achievment Rate\"\nFROM (\n  SELECT\n    count(summary_date) as goal_met_days,\n    DATE_PART('day', \n                 to_timestamp('${__to:date:seconds}')  - \n                 to_timestamp('${__from:date:seconds}')\n      ) as total_days\n  FROM\n    hk_activity_summary\n  WHERE\n    $__timeFilter(summary_date)\n  AND\n    active_energy_burned >= active_energy_burned_goal\n  AND\n    apple_exercise_time >= apple_exercise_time_goal\n  AND \n    apple_stand_hours >= apple_stand_hours_goal\n  ORDER BY 1\n) n1",
+          "rawSql": "SELECT \n--  goal_met_days as \"Met Goal\",\n--  total_days as \"Total Days\",\n  goal_met_days / total_days as \"Achievment Rate\"\nFROM (\n  SELECT\n    count(summary_date) as goal_met_days,\n    DATE_PART('day', \n                 to_timestamp('${__to:date:seconds}')  - \n                 to_timestamp('${__from:date:seconds}')\n      ) as total_days\n  FROM\n    hk_activity_summary\n  WHERE\n    $__timeFilter(summary_date)\n  AND\n    active_energy_burned >= active_energy_burned_goal\n  AND\n    apple_exercise_time >= apple_exercise_time_goal\n  AND \n    apple_stand_hours >= apple_stand_hours_goal\n  ORDER BY 1\n) n1",
           "refId": "A",
           "select": [
             [
@@ -1168,374 +575,15 @@
       "type": "stat"
     },
     {
-      "collapsed": false,
       "gridPos": {
         "h": 1,
         "w": 24,
         "x": 0,
-        "y": 21
+        "y": 4
       },
-      "id": 16,
-      "panels": [],
-      "title": "What is the average daily...",
+      "id": 49,
+      "title": "Activity & Movement",
       "type": "row"
-    },
-    {
-      "datasource": {
-        "type": "postgres",
-        "uid": "P1895DA3115ECF03F"
-      },
-      "description": "",
-      "fieldConfig": {
-        "defaults": {
-          "color": {
-            "mode": "thresholds"
-          },
-          "mappings": [],
-          "thresholds": {
-            "mode": "absolute",
-            "steps": [
-              {
-                "color": "green",
-                "value": null
-              },
-              {
-                "color": "red",
-                "value": 80
-              }
-            ]
-          },
-          "unit": "masslb"
-        },
-        "overrides": [
-          {
-            "matcher": {
-              "id": "byName",
-              "options": "Body Fat %"
-            },
-            "properties": [
-              {
-                "id": "unit",
-                "value": "percentunit"
-              }
-            ]
-          }
-        ]
-      },
-      "gridPos": {
-        "h": 3,
-        "w": 12,
-        "x": 0,
-        "y": 22
-      },
-      "id": 18,
-      "options": {
-        "colorMode": "value",
-        "graphMode": "area",
-        "justifyMode": "auto",
-        "orientation": "auto",
-        "reduceOptions": {
-          "calcs": [
-            "mean"
-          ],
-          "fields": "",
-          "values": false
-        },
-        "text": {},
-        "textMode": "auto"
-      },
-      "pluginVersion": "8.4.5",
-      "targets": [
-        {
-          "datasource": {
-            "type": "postgres",
-            "uid": "P1895DA3115ECF03F"
-          },
-          "format": "time_series",
-          "group": [],
-          "metricColumn": "none",
-          "rawQuery": true,
-          "rawSql": "SELECT\n  start_date as time,\n  hk_value as \"Body Mass\"\nFROM \n  public.hk_quantity_record\nWHERE\n  $__timeFilter(start_date)\nAND\n  hk_type = 'BodyMass'\nORDER BY time",
-          "refId": "A",
-          "select": [
-            [
-              {
-                "params": [
-                  "value"
-                ],
-                "type": "column"
-              }
-            ]
-          ],
-          "timeColumn": "time",
-          "where": [
-            {
-              "name": "$__timeFilter",
-              "params": [],
-              "type": "macro"
-            }
-          ]
-        },
-        {
-          "datasource": {
-            "type": "postgres",
-            "uid": "P1895DA3115ECF03F"
-          },
-          "format": "time_series",
-          "group": [],
-          "hide": false,
-          "metricColumn": "none",
-          "rawQuery": true,
-          "rawSql": "SELECT\n  start_date as time,\n  hk_value as \"Lean Body Mass\"\nFROM \n  public.hk_quantity_record\nWHERE\n  $__timeFilter(start_date)\nAND\n  hk_type = 'LeanBodyMass'\nORDER BY time",
-          "refId": "B",
-          "select": [
-            [
-              {
-                "params": [
-                  "value"
-                ],
-                "type": "column"
-              }
-            ]
-          ],
-          "timeColumn": "time",
-          "where": [
-            {
-              "name": "$__timeFilter",
-              "params": [],
-              "type": "macro"
-            }
-          ]
-        },
-        {
-          "datasource": {
-            "type": "postgres",
-            "uid": "P1895DA3115ECF03F"
-          },
-          "format": "time_series",
-          "group": [],
-          "hide": false,
-          "metricColumn": "none",
-          "rawQuery": true,
-          "rawSql": "SELECT\n  start_date as time,\n  hk_value as \"Body Fat %\"\nFROM \n  public.hk_quantity_record\nWHERE\n  $__timeFilter(start_date)\nAND\n  hk_type = 'BodyFatPercentage'\nORDER BY time",
-          "refId": "C",
-          "select": [
-            [
-              {
-                "params": [
-                  "hk_value"
-                ],
-                "type": "column"
-              }
-            ]
-          ],
-          "table": "hk_quantity_record",
-          "timeColumn": "creation_date",
-          "timeColumnType": "timestamp",
-          "where": [
-            {
-              "name": "$__timeFilter",
-              "params": [],
-              "type": "macro"
-            }
-          ]
-        }
-      ],
-      "type": "stat"
-    },
-    {
-      "datasource": {
-        "type": "postgres",
-        "uid": "P1895DA3115ECF03F"
-      },
-      "description": "",
-      "fieldConfig": {
-        "defaults": {
-          "color": {
-            "mode": "thresholds"
-          },
-          "mappings": [],
-          "thresholds": {
-            "mode": "absolute",
-            "steps": [
-              {
-                "color": "green",
-                "value": null
-              },
-              {
-                "color": "red",
-                "value": 80
-              }
-            ]
-          },
-          "unit": "s"
-        },
-        "overrides": [
-          {
-            "matcher": {
-              "id": "byName",
-              "options": "Time in Bed"
-            },
-            "properties": [
-              {
-                "id": "color",
-                "value": {
-                  "fixedColor": "dark-blue",
-                  "mode": "fixed"
-                }
-              }
-            ]
-          }
-        ]
-      },
-      "gridPos": {
-        "h": 3,
-        "w": 6,
-        "x": 12,
-        "y": 22
-      },
-      "id": 22,
-      "options": {
-        "colorMode": "value",
-        "graphMode": "area",
-        "justifyMode": "auto",
-        "orientation": "auto",
-        "reduceOptions": {
-          "calcs": [
-            "mean"
-          ],
-          "fields": "",
-          "values": false
-        },
-        "text": {
-          "valueSize": 50
-        },
-        "textMode": "auto"
-      },
-      "pluginVersion": "8.4.5",
-      "targets": [
-        {
-          "format": "time_series",
-          "group": [],
-          "metricColumn": "none",
-          "queryType": "randomWalk",
-          "rawQuery": true,
-          "rawSql": "select\n  creation_date::date as time,\n  sum(EXTRACT(EPOCH FROM (end_date - start_date))) as \"Time in Bed\"\nfrom hk_category_record \nwhere \n  $__timeFilter(start_date)\nAND\n  hk_type = 'HKCategoryTypeIdentifierSleepAnalysis'\nAND \n  hk_value = 'HKCategoryValueSleepAnalysisInBed'\nGROUP BY time\nORDER BY time",
-          "refId": "A",
-          "select": [
-            [
-              {
-                "params": [
-                  "hk_value"
-                ],
-                "type": "column"
-              }
-            ]
-          ],
-          "table": "hk_quantity_record",
-          "timeColumn": "creation_date",
-          "timeColumnType": "timestamp",
-          "where": [
-            {
-              "name": "$__timeFilter",
-              "params": [],
-              "type": "macro"
-            }
-          ]
-        }
-      ],
-      "title": "...time spent in bed?",
-      "type": "stat"
-    },
-    {
-      "datasource": {
-        "type": "postgres",
-        "uid": "P1895DA3115ECF03F"
-      },
-      "description": "",
-      "fieldConfig": {
-        "defaults": {
-          "color": {
-            "fixedColor": "dark-red",
-            "mode": "fixed"
-          },
-          "mappings": [],
-          "thresholds": {
-            "mode": "absolute",
-            "steps": [
-              {
-                "color": "green",
-                "value": null
-              },
-              {
-                "color": "red",
-                "value": 80
-              }
-            ]
-          },
-          "unit": "m"
-        },
-        "overrides": []
-      },
-      "gridPos": {
-        "h": 3,
-        "w": 6,
-        "x": 18,
-        "y": 22
-      },
-      "id": 24,
-      "options": {
-        "colorMode": "value",
-        "graphMode": "area",
-        "justifyMode": "auto",
-        "orientation": "auto",
-        "reduceOptions": {
-          "calcs": [
-            "mean"
-          ],
-          "fields": "",
-          "values": false
-        },
-        "text": {
-          "valueSize": 50
-        },
-        "textMode": "auto"
-      },
-      "pluginVersion": "8.4.5",
-      "targets": [
-        {
-          "datasource": {
-            "type": "postgres",
-            "uid": "P1895DA3115ECF03F"
-          },
-          "format": "time_series",
-          "group": [],
-          "metricColumn": "none",
-          "rawQuery": true,
-          "rawSql": "SELECT\n  $__timeGroupAlias(start_date, '1d', NULL),\n  sum(hk_value) as \"Exercise Time\"\nFROM \n  public.hk_quantity_record\nWHERE\n  $__timeFilter(start_date)\nAND\n  hk_type = 'AppleExerciseTime'\nAND\n  hk_source = 'Nathaniel’s Apple Watch'\nGROUP BY time\nORDER BY time",
-          "refId": "A",
-          "select": [
-            [
-              {
-                "params": [
-                  "value"
-                ],
-                "type": "column"
-              }
-            ]
-          ],
-          "timeColumn": "time",
-          "where": [
-            {
-              "name": "$__timeFilter",
-              "params": [],
-              "type": "macro"
-            }
-          ]
-        }
-      ],
-      "title": "...time spent exercising?",
-      "type": "stat"
     },
     {
       "datasource": {
@@ -1594,7 +642,7 @@
         "h": 6,
         "w": 6,
         "x": 0,
-        "y": 25
+        "y": 5
       },
       "id": 20,
       "options": {
@@ -1689,7 +737,7 @@
           ]
         }
       ],
-      "title": "...calories burned?",
+      "title": "How many calories do I burn?",
       "type": "piechart"
     },
     {
@@ -1701,115 +749,7 @@
       "fieldConfig": {
         "defaults": {
           "color": {
-            "mode": "thresholds"
-          },
-          "mappings": [],
-          "thresholds": {
-            "mode": "absolute",
-            "steps": [
-              {
-                "color": "green",
-                "value": null
-              },
-              {
-                "color": "red",
-                "value": 80
-              }
-            ]
-          },
-          "unit": "none"
-        },
-        "overrides": [
-          {
-            "matcher": {
-              "id": "byName",
-              "options": "Steps"
-            },
-            "properties": [
-              {
-                "id": "color",
-                "value": {
-                  "fixedColor": "dark-green",
-                  "mode": "fixed"
-                }
-              }
-            ]
-          }
-        ]
-      },
-      "gridPos": {
-        "h": 3,
-        "w": 6,
-        "x": 6,
-        "y": 25
-      },
-      "id": 26,
-      "options": {
-        "colorMode": "value",
-        "graphMode": "area",
-        "justifyMode": "auto",
-        "orientation": "auto",
-        "reduceOptions": {
-          "calcs": [
-            "mean"
-          ],
-          "fields": "",
-          "values": false
-        },
-        "text": {
-          "valueSize": 50
-        },
-        "textMode": "auto"
-      },
-      "pluginVersion": "8.4.5",
-      "targets": [
-        {
-          "datasource": {
-            "type": "postgres",
-            "uid": "P1895DA3115ECF03F"
-          },
-          "format": "time_series",
-          "group": [],
-          "metricColumn": "none",
-          "queryType": "randomWalk",
-          "rawQuery": true,
-          "rawSql": "select\n  creation_date::date as time,\n  sum(hk_value) as \"Steps\"\nfrom hk_quantity_record \nwhere \n  $__timeFilter(start_date)\nAND\n  hk_type = 'StepCount'\nGROUP BY time\nORDER BY time",
-          "refId": "A",
-          "select": [
-            [
-              {
-                "params": [
-                  "hk_value"
-                ],
-                "type": "column"
-              }
-            ]
-          ],
-          "table": "hk_quantity_record",
-          "timeColumn": "creation_date",
-          "timeColumnType": "timestamp",
-          "where": [
-            {
-              "name": "$__timeFilter",
-              "params": [],
-              "type": "macro"
-            }
-          ]
-        }
-      ],
-      "title": "...steps taken?",
-      "type": "stat"
-    },
-    {
-      "datasource": {
-        "type": "postgres",
-        "uid": "P1895DA3115ECF03F"
-      },
-      "description": "",
-      "fieldConfig": {
-        "defaults": {
-          "color": {
-            "fixedColor": "dark-orange",
+            "fixedColor": "dark-red",
             "mode": "fixed"
           },
           "mappings": [],
@@ -1826,33 +766,17 @@
               }
             ]
           },
-          "unit": "none"
+          "unit": "m"
         },
-        "overrides": [
-          {
-            "matcher": {
-              "id": "byName",
-              "options": "Time in Bed"
-            },
-            "properties": [
-              {
-                "id": "color",
-                "value": {
-                  "fixedColor": "dark-blue",
-                  "mode": "fixed"
-                }
-              }
-            ]
-          }
-        ]
+        "overrides": []
       },
       "gridPos": {
         "h": 3,
         "w": 6,
-        "x": 12,
-        "y": 25
+        "x": 6,
+        "y": 5
       },
-      "id": 28,
+      "id": 24,
       "options": {
         "colorMode": "value",
         "graphMode": "area",
@@ -1880,23 +804,20 @@
           "format": "time_series",
           "group": [],
           "metricColumn": "none",
-          "queryType": "randomWalk",
           "rawQuery": true,
-          "rawSql": "select\n  creation_date::date as time,\n  sum(hk_value) as \"Flights Climbed\"\nfrom hk_quantity_record \nwhere \n  $__timeFilter(start_date)\nAND\n  hk_type = 'FlightsClimbed'\nGROUP BY time\nORDER BY time",
+          "rawSql": "SELECT\n  $__timeGroupAlias(start_date, '1d', NULL),\n  sum(hk_value) as \"Exercise Time\"\nFROM \n  public.hk_quantity_record\nWHERE\n  $__timeFilter(start_date)\nAND\n  hk_type = 'AppleExerciseTime'\nAND\n  hk_source = 'Nathaniel’s Apple Watch'\nGROUP BY time\nORDER BY time",
           "refId": "A",
           "select": [
             [
               {
                 "params": [
-                  "hk_value"
+                  "value"
                 ],
                 "type": "column"
               }
             ]
           ],
-          "table": "hk_quantity_record",
-          "timeColumn": "creation_date",
-          "timeColumnType": "timestamp",
+          "timeColumn": "time",
           "where": [
             {
               "name": "$__timeFilter",
@@ -1906,7 +827,7 @@
           ]
         }
       ],
-      "title": "...flights of stairs climbed?",
+      "title": "How much time do I spend exercising?",
       "type": "stat"
     },
     {
@@ -1957,8 +878,8 @@
       "gridPos": {
         "h": 3,
         "w": 6,
-        "x": 18,
-        "y": 25
+        "x": 12,
+        "y": 5
       },
       "id": 30,
       "options": {
@@ -2014,8 +935,254 @@
           ]
         }
       ],
-      "title": "...distance run / walked?",
+      "title": "How far do I run / walk?",
       "type": "stat"
+    },
+    {
+      "description": "",
+      "gridPos": {
+        "h": 6,
+        "w": 6,
+        "x": 18,
+        "y": 5
+      },
+      "id": 51,
+      "options": {
+        "content": "<h1>Dashboard Info</h1>\n<br/>\nAll tiles on this page display the mean of all daily values in the time range selected.",
+        "mode": "html"
+      },
+      "pluginVersion": "8.4.5",
+      "type": "text"
+    },
+    {
+      "datasource": {
+        "type": "postgres",
+        "uid": "P1895DA3115ECF03F"
+      },
+      "description": "",
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "fixedColor": "dark-orange",
+            "mode": "fixed"
+          },
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              },
+              {
+                "color": "red",
+                "value": 80
+              }
+            ]
+          },
+          "unit": "none"
+        },
+        "overrides": [
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "Time in Bed"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "fixedColor": "dark-blue",
+                  "mode": "fixed"
+                }
+              }
+            ]
+          }
+        ]
+      },
+      "gridPos": {
+        "h": 3,
+        "w": 6,
+        "x": 6,
+        "y": 8
+      },
+      "id": 28,
+      "options": {
+        "colorMode": "value",
+        "graphMode": "area",
+        "justifyMode": "auto",
+        "orientation": "auto",
+        "reduceOptions": {
+          "calcs": [
+            "mean"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "text": {
+          "valueSize": 50
+        },
+        "textMode": "auto"
+      },
+      "pluginVersion": "8.4.5",
+      "targets": [
+        {
+          "datasource": {
+            "type": "postgres",
+            "uid": "P1895DA3115ECF03F"
+          },
+          "format": "time_series",
+          "group": [],
+          "metricColumn": "none",
+          "queryType": "randomWalk",
+          "rawQuery": true,
+          "rawSql": "select\n  creation_date::date as time,\n  sum(hk_value) as \"Flights Climbed\"\nfrom hk_quantity_record \nwhere \n  $__timeFilter(start_date)\nAND\n  hk_type = 'FlightsClimbed'\nGROUP BY time\nORDER BY time",
+          "refId": "A",
+          "select": [
+            [
+              {
+                "params": [
+                  "hk_value"
+                ],
+                "type": "column"
+              }
+            ]
+          ],
+          "table": "hk_quantity_record",
+          "timeColumn": "creation_date",
+          "timeColumnType": "timestamp",
+          "where": [
+            {
+              "name": "$__timeFilter",
+              "params": [],
+              "type": "macro"
+            }
+          ]
+        }
+      ],
+      "title": "How many flights of stairs do I climb?",
+      "type": "stat"
+    },
+    {
+      "datasource": {
+        "type": "postgres",
+        "uid": "P1895DA3115ECF03F"
+      },
+      "description": "",
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "thresholds"
+          },
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              },
+              {
+                "color": "red",
+                "value": 80
+              }
+            ]
+          },
+          "unit": "none"
+        },
+        "overrides": [
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "Steps"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "fixedColor": "dark-green",
+                  "mode": "fixed"
+                }
+              }
+            ]
+          }
+        ]
+      },
+      "gridPos": {
+        "h": 3,
+        "w": 6,
+        "x": 12,
+        "y": 8
+      },
+      "id": 26,
+      "options": {
+        "colorMode": "value",
+        "graphMode": "area",
+        "justifyMode": "auto",
+        "orientation": "auto",
+        "reduceOptions": {
+          "calcs": [
+            "mean"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "text": {
+          "valueSize": 50
+        },
+        "textMode": "auto"
+      },
+      "pluginVersion": "8.4.5",
+      "targets": [
+        {
+          "datasource": {
+            "type": "postgres",
+            "uid": "P1895DA3115ECF03F"
+          },
+          "format": "time_series",
+          "group": [],
+          "metricColumn": "none",
+          "queryType": "randomWalk",
+          "rawQuery": true,
+          "rawSql": "select\n  creation_date::date as time,\n  sum(hk_value) as \"Steps\"\nfrom hk_quantity_record \nwhere \n  $__timeFilter(start_date)\nAND\n  hk_type = 'StepCount'\nGROUP BY time\nORDER BY time",
+          "refId": "A",
+          "select": [
+            [
+              {
+                "params": [
+                  "hk_value"
+                ],
+                "type": "column"
+              }
+            ]
+          ],
+          "table": "hk_quantity_record",
+          "timeColumn": "creation_date",
+          "timeColumnType": "timestamp",
+          "where": [
+            {
+              "name": "$__timeFilter",
+              "params": [],
+              "type": "macro"
+            }
+          ]
+        }
+      ],
+      "title": "How many steps do I take?",
+      "type": "stat"
+    },
+    {
+      "collapsed": false,
+      "gridPos": {
+        "h": 1,
+        "w": 24,
+        "x": 0,
+        "y": 11
+      },
+      "id": 47,
+      "panels": [],
+      "title": "Sleeping / Standing",
+      "type": "row"
     },
     {
       "datasource": {
@@ -2049,9 +1216,9 @@
       },
       "gridPos": {
         "h": 3,
-        "w": 6,
-        "x": 6,
-        "y": 28
+        "w": 8,
+        "x": 0,
+        "y": 12
       },
       "id": 32,
       "options": {
@@ -2104,7 +1271,7 @@
           ]
         }
       ],
-      "title": "...time spent standing?",
+      "title": "How much time do I spend standing?",
       "type": "stat"
     },
     {
@@ -2141,9 +1308,9 @@
       },
       "gridPos": {
         "h": 3,
-        "w": 6,
-        "x": 12,
-        "y": 28
+        "w": 8,
+        "x": 8,
+        "y": 12
       },
       "id": 34,
       "options": {
@@ -2166,6 +1333,10 @@
       "pluginVersion": "8.4.5",
       "targets": [
         {
+          "datasource": {
+            "type": "postgres",
+            "uid": "P1895DA3115ECF03F"
+          },
           "format": "time_series",
           "group": [],
           "metricColumn": "none",
@@ -2195,7 +1366,862 @@
           ]
         }
       ],
-      "title": "... stand hours per day?",
+      "title": "How many hours did I stand for at least 1 minute?",
+      "type": "stat"
+    },
+    {
+      "datasource": {
+        "type": "postgres",
+        "uid": "P1895DA3115ECF03F"
+      },
+      "description": "",
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "thresholds"
+          },
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              },
+              {
+                "color": "red",
+                "value": 80
+              }
+            ]
+          },
+          "unit": "s"
+        },
+        "overrides": [
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "Time in Bed"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "fixedColor": "dark-blue",
+                  "mode": "fixed"
+                }
+              }
+            ]
+          }
+        ]
+      },
+      "gridPos": {
+        "h": 3,
+        "w": 8,
+        "x": 16,
+        "y": 12
+      },
+      "id": 22,
+      "options": {
+        "colorMode": "value",
+        "graphMode": "area",
+        "justifyMode": "auto",
+        "orientation": "auto",
+        "reduceOptions": {
+          "calcs": [
+            "mean"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "text": {
+          "valueSize": 50
+        },
+        "textMode": "auto"
+      },
+      "pluginVersion": "8.4.5",
+      "targets": [
+        {
+          "format": "time_series",
+          "group": [],
+          "metricColumn": "none",
+          "queryType": "randomWalk",
+          "rawQuery": true,
+          "rawSql": "select\n  creation_date::date as time,\n  sum(EXTRACT(EPOCH FROM (end_date - start_date))) as \"Time in Bed\"\nfrom hk_category_record \nwhere \n  $__timeFilter(start_date)\nAND\n  hk_type = 'HKCategoryTypeIdentifierSleepAnalysis'\nAND \n  hk_value = 'HKCategoryValueSleepAnalysisInBed'\nGROUP BY time\nORDER BY time",
+          "refId": "A",
+          "select": [
+            [
+              {
+                "params": [
+                  "hk_value"
+                ],
+                "type": "column"
+              }
+            ]
+          ],
+          "table": "hk_quantity_record",
+          "timeColumn": "creation_date",
+          "timeColumnType": "timestamp",
+          "where": [
+            {
+              "name": "$__timeFilter",
+              "params": [],
+              "type": "macro"
+            }
+          ]
+        }
+      ],
+      "title": "How much time do I spend in bed?",
+      "type": "stat"
+    },
+    {
+      "collapsed": false,
+      "gridPos": {
+        "h": 1,
+        "w": 24,
+        "x": 0,
+        "y": 15
+      },
+      "id": 16,
+      "panels": [],
+      "title": "Body Measurements",
+      "type": "row"
+    },
+    {
+      "datasource": {
+        "type": "postgres",
+        "uid": "P1895DA3115ECF03F"
+      },
+      "description": "",
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "thresholds"
+          },
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "dark-blue",
+                "value": null
+              },
+              {
+                "color": "dark-green",
+                "value": 0.06
+              },
+              {
+                "color": "green",
+                "value": 0.13
+              },
+              {
+                "color": "super-light-green",
+                "value": 0.17
+              },
+              {
+                "color": "red",
+                "value": 0.25
+              }
+            ]
+          },
+          "unit": "masslb"
+        },
+        "overrides": [
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "Body Mass"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "fixedColor": "blue",
+                  "mode": "fixed"
+                }
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "Lean Body Mass"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "fixedColor": "purple",
+                  "mode": "fixed"
+                }
+              }
+            ]
+          }
+        ]
+      },
+      "gridPos": {
+        "h": 3,
+        "w": 12,
+        "x": 0,
+        "y": 16
+      },
+      "id": 18,
+      "options": {
+        "colorMode": "value",
+        "graphMode": "area",
+        "justifyMode": "auto",
+        "orientation": "auto",
+        "reduceOptions": {
+          "calcs": [
+            "mean"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "text": {
+          "valueSize": 50
+        },
+        "textMode": "auto"
+      },
+      "pluginVersion": "8.4.5",
+      "targets": [
+        {
+          "datasource": {
+            "type": "postgres",
+            "uid": "P1895DA3115ECF03F"
+          },
+          "format": "time_series",
+          "group": [],
+          "metricColumn": "none",
+          "rawQuery": true,
+          "rawSql": "SELECT\n  start_date as time,\n  hk_value as \"Body Mass\"\nFROM \n  public.hk_quantity_record\nWHERE\n  $__timeFilter(start_date)\nAND\n  hk_type = 'BodyMass'\nORDER BY time",
+          "refId": "A",
+          "select": [
+            [
+              {
+                "params": [
+                  "value"
+                ],
+                "type": "column"
+              }
+            ]
+          ],
+          "timeColumn": "time",
+          "where": [
+            {
+              "name": "$__timeFilter",
+              "params": [],
+              "type": "macro"
+            }
+          ]
+        },
+        {
+          "datasource": {
+            "type": "postgres",
+            "uid": "P1895DA3115ECF03F"
+          },
+          "format": "time_series",
+          "group": [],
+          "hide": false,
+          "metricColumn": "none",
+          "rawQuery": true,
+          "rawSql": "SELECT\n  start_date as time,\n  hk_value as \"Lean Body Mass\"\nFROM \n  public.hk_quantity_record\nWHERE\n  $__timeFilter(start_date)\nAND\n  hk_type = 'LeanBodyMass'\nORDER BY time",
+          "refId": "B",
+          "select": [
+            [
+              {
+                "params": [
+                  "value"
+                ],
+                "type": "column"
+              }
+            ]
+          ],
+          "timeColumn": "time",
+          "where": [
+            {
+              "name": "$__timeFilter",
+              "params": [],
+              "type": "macro"
+            }
+          ]
+        }
+      ],
+      "title": "How much do I weigh?",
+      "type": "stat"
+    },
+    {
+      "datasource": {
+        "type": "postgres",
+        "uid": "P1895DA3115ECF03F"
+      },
+      "description": "",
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "thresholds"
+          },
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "dark-blue",
+                "value": null
+              },
+              {
+                "color": "dark-green",
+                "value": 0.06
+              },
+              {
+                "color": "green",
+                "value": 0.13
+              },
+              {
+                "color": "super-light-green",
+                "value": 0.17
+              },
+              {
+                "color": "red",
+                "value": 0.25
+              }
+            ]
+          },
+          "unit": "percentunit"
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 3,
+        "w": 6,
+        "x": 12,
+        "y": 16
+      },
+      "id": 45,
+      "options": {
+        "colorMode": "value",
+        "graphMode": "area",
+        "justifyMode": "auto",
+        "orientation": "auto",
+        "reduceOptions": {
+          "calcs": [
+            "mean"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "text": {
+          "valueSize": 50
+        },
+        "textMode": "auto"
+      },
+      "pluginVersion": "8.4.5",
+      "targets": [
+        {
+          "datasource": {
+            "type": "postgres",
+            "uid": "P1895DA3115ECF03F"
+          },
+          "format": "time_series",
+          "group": [],
+          "hide": false,
+          "metricColumn": "none",
+          "rawQuery": true,
+          "rawSql": "SELECT\n  start_date as time,\n  hk_value as \"Body Fat %\"\nFROM \n  public.hk_quantity_record\nWHERE\n  $__timeFilter(start_date)\nAND\n  hk_type = 'BodyFatPercentage'\nORDER BY time",
+          "refId": "C",
+          "select": [
+            [
+              {
+                "params": [
+                  "hk_value"
+                ],
+                "type": "column"
+              }
+            ]
+          ],
+          "table": "hk_quantity_record",
+          "timeColumn": "creation_date",
+          "timeColumnType": "timestamp",
+          "where": [
+            {
+              "name": "$__timeFilter",
+              "params": [],
+              "type": "macro"
+            }
+          ]
+        }
+      ],
+      "title": "What percent of my weight is fat?",
+      "type": "stat"
+    },
+    {
+      "datasource": {
+        "type": "postgres",
+        "uid": "P1895DA3115ECF03F"
+      },
+      "description": "",
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "thresholds"
+          },
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              },
+              {
+                "color": "red",
+                "value": 80
+              }
+            ]
+          }
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 3,
+        "w": 6,
+        "x": 18,
+        "y": 16
+      },
+      "id": 36,
+      "options": {
+        "colorMode": "value",
+        "graphMode": "area",
+        "justifyMode": "auto",
+        "orientation": "auto",
+        "reduceOptions": {
+          "calcs": [
+            "mean"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "text": {
+          "valueSize": 50
+        },
+        "textMode": "auto"
+      },
+      "pluginVersion": "8.4.5",
+      "targets": [
+        {
+          "datasource": {
+            "type": "postgres",
+            "uid": "P1895DA3115ECF03F"
+          },
+          "format": "time_series",
+          "group": [],
+          "metricColumn": "none",
+          "rawQuery": true,
+          "rawSql": "SELECT\n  start_date as time,\n  hk_value as \"BMI\"\nFROM \n  public.hk_quantity_record\nWHERE\n  $__timeFilter(start_date)\nAND\n  hk_type = 'BodyMassIndex'\nORDER BY time",
+          "refId": "A",
+          "select": [
+            [
+              {
+                "params": [
+                  "value"
+                ],
+                "type": "column"
+              }
+            ]
+          ],
+          "timeColumn": "time",
+          "where": [
+            {
+              "name": "$__timeFilter",
+              "params": [],
+              "type": "macro"
+            }
+          ]
+        }
+      ],
+      "title": "What is my BMI?",
+      "type": "stat"
+    },
+    {
+      "collapsed": false,
+      "gridPos": {
+        "h": 1,
+        "w": 24,
+        "x": 0,
+        "y": 19
+      },
+      "id": 44,
+      "panels": [],
+      "title": "Vital Signs",
+      "type": "row"
+    },
+    {
+      "datasource": {
+        "type": "postgres",
+        "uid": "P1895DA3115ECF03F"
+      },
+      "description": "",
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "thresholds"
+          },
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              },
+              {
+                "color": "red",
+                "value": 80
+              }
+            ]
+          },
+          "unit": "BPM"
+        },
+        "overrides": [
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "min"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "fixedColor": "super-light-purple",
+                  "mode": "fixed"
+                }
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "max"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "fixedColor": "red",
+                  "mode": "fixed"
+                }
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "avg"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "fixedColor": "purple",
+                  "mode": "fixed"
+                }
+              }
+            ]
+          }
+        ]
+      },
+      "gridPos": {
+        "h": 3,
+        "w": 12,
+        "x": 0,
+        "y": 20
+      },
+      "id": 38,
+      "options": {
+        "colorMode": "value",
+        "graphMode": "area",
+        "justifyMode": "auto",
+        "orientation": "auto",
+        "reduceOptions": {
+          "calcs": [
+            "mean"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "textMode": "auto"
+      },
+      "pluginVersion": "8.4.5",
+      "targets": [
+        {
+          "datasource": {
+            "type": "postgres",
+            "uid": "P1895DA3115ECF03F"
+          },
+          "format": "time_series",
+          "group": [],
+          "metricColumn": "none",
+          "rawQuery": true,
+          "rawSql": "SELECT\n  date_trunc('day', start_date AT TIME ZONE 'MDT') as time,\n  min(hk_value),\n  avg(hk_value),\n  max(hk_value)\nFROM \n  public.hk_quantity_record\nWHERE\n  $__timeFilter(start_date)\nAND\n  hk_type = 'HeartRate'\nGROUP BY time\nORDER BY time",
+          "refId": "A",
+          "select": [
+            [
+              {
+                "params": [
+                  "value"
+                ],
+                "type": "column"
+              }
+            ]
+          ],
+          "timeColumn": "time",
+          "where": [
+            {
+              "name": "$__timeFilter",
+              "params": [],
+              "type": "macro"
+            }
+          ]
+        }
+      ],
+      "title": "What are my heart rate values?",
+      "type": "stat"
+    },
+    {
+      "datasource": {
+        "type": "postgres",
+        "uid": "P1895DA3115ECF03F"
+      },
+      "description": "",
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "thresholds"
+          },
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              },
+              {
+                "color": "red",
+                "value": 80
+              }
+            ]
+          },
+          "unit": "percentunit"
+        },
+        "overrides": [
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "max"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "fixedColor": "blue",
+                  "mode": "fixed"
+                }
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "avg"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "fixedColor": "orange",
+                  "mode": "fixed"
+                }
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "min"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "fixedColor": "super-light-orange",
+                  "mode": "fixed"
+                }
+              }
+            ]
+          }
+        ]
+      },
+      "gridPos": {
+        "h": 3,
+        "w": 12,
+        "x": 12,
+        "y": 20
+      },
+      "id": 40,
+      "options": {
+        "colorMode": "value",
+        "graphMode": "area",
+        "justifyMode": "auto",
+        "orientation": "auto",
+        "reduceOptions": {
+          "calcs": [
+            "mean"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "textMode": "auto"
+      },
+      "pluginVersion": "8.4.5",
+      "targets": [
+        {
+          "format": "time_series",
+          "group": [],
+          "metricColumn": "none",
+          "rawQuery": true,
+          "rawSql": "SELECT\n  date_trunc('day', start_date AT TIME ZONE 'MDT') as time,\n  min(hk_value),\n  avg(hk_value),\n  max(hk_value)\nFROM \n  public.hk_quantity_record\nWHERE\n  $__timeFilter(start_date)\nAND\n  hk_type = 'OxygenSaturation'\nGROUP BY time\nORDER BY time",
+          "refId": "A",
+          "select": [
+            [
+              {
+                "params": [
+                  "value"
+                ],
+                "type": "column"
+              }
+            ]
+          ],
+          "timeColumn": "time",
+          "where": [
+            {
+              "name": "$__timeFilter",
+              "params": [],
+              "type": "macro"
+            }
+          ]
+        }
+      ],
+      "title": "What is my blood oxygen saturation?",
+      "type": "stat"
+    },
+    {
+      "datasource": {
+        "type": "postgres",
+        "uid": "P1895DA3115ECF03F"
+      },
+      "description": "",
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "thresholds"
+          },
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              },
+              {
+                "color": "red",
+                "value": 80
+              }
+            ]
+          }
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 3,
+        "w": 12,
+        "x": 0,
+        "y": 23
+      },
+      "id": 42,
+      "options": {
+        "colorMode": "value",
+        "graphMode": "area",
+        "justifyMode": "auto",
+        "orientation": "auto",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "textMode": "auto"
+      },
+      "pluginVersion": "8.4.5",
+      "targets": [
+        {
+          "format": "time_series",
+          "group": [],
+          "metricColumn": "none",
+          "rawQuery": true,
+          "rawSql": "SELECT\n  start_date as time,\n  hk_value as \"Resting\"\nFROM \n  public.hk_quantity_record\nWHERE\n  $__timeFilter(start_date)\nAND\n  hk_type = 'RestingHeartRate'\nORDER BY time",
+          "refId": "A",
+          "select": [
+            [
+              {
+                "params": [
+                  "value"
+                ],
+                "type": "column"
+              }
+            ]
+          ],
+          "timeColumn": "time",
+          "where": [
+            {
+              "name": "$__timeFilter",
+              "params": [],
+              "type": "macro"
+            }
+          ]
+        },
+        {
+          "format": "time_series",
+          "group": [],
+          "hide": false,
+          "metricColumn": "none",
+          "rawQuery": true,
+          "rawSql": "SELECT\n  start_date as time,\n  hk_value as \"Walking\"\nFROM \n  public.hk_quantity_record\nWHERE\n  $__timeFilter(start_date)\nAND\n  hk_type = 'WalkingHeartRateAverage'\nORDER BY time",
+          "refId": "B",
+          "select": [
+            [
+              {
+                "params": [
+                  "hk_value"
+                ],
+                "type": "column"
+              }
+            ]
+          ],
+          "table": "hk_quantity_record",
+          "timeColumn": "creation_date",
+          "timeColumnType": "timestamp",
+          "where": [
+            {
+              "name": "$__timeFilter",
+              "params": [],
+              "type": "macro"
+            }
+          ]
+        }
+      ],
+      "title": "What is my resting and walking heart rate?",
       "type": "stat"
     }
   ],
@@ -2206,13 +2232,13 @@
     "list": []
   },
   "time": {
-    "from": "now-14d",
+    "from": "now-30d",
     "to": "now"
   },
   "timepicker": {},
   "timezone": "",
   "title": "Daily Summaries",
   "uid": "HGFcy3G7z",
-  "version": 1,
+  "version": 7,
   "weekStart": ""
 }
